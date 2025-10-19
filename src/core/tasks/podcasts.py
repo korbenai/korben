@@ -9,8 +9,8 @@ import requests
 import getpodcast
 import yaml
 import controlflow as cf
-from lib.llm import transcribe_with_whisper
-from lib.email import send_email
+from src.lib.llm import transcribe_with_whisper
+from src.lib.email import send_email
 
 # Suppress XML parsing warnings from BeautifulSoup in getpodcast
 try:
@@ -64,8 +64,26 @@ def download(**kwargs):
         print(f"Download. Directory {PODCASTS_PATH} does not exist. Making...")
         os.makedirs(PODCASTS_PATH, exist_ok=True)
     
-    # Load the podcasts configuration from yaml file 
-    config_path = os.path.expanduser(f'{PROFILES_PATH}/scripts/config/podcasts.yml')
+    # Load the podcasts configuration from yaml file
+    # Try user config first, then fall back to repo config
+    user_config_path = os.path.expanduser(f'{PROFILES_PATH}/scripts/config/podcasts.yml')
+    repo_config_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'config', 'podcasts.yml')
+    
+    config_path = None
+    if os.path.exists(user_config_path):
+        config_path = user_config_path
+        print(f"Using user config: {config_path}")
+    elif os.path.exists(repo_config_path):
+        config_path = repo_config_path
+        print(f"Using default config: {config_path}")
+    else:
+        raise FileNotFoundError(
+            f"No config file found. Tried:\n"
+            f"  - {user_config_path}\n"
+            f"  - {repo_config_path}\n"
+            f"Please copy config/podcasts.yml.example to {user_config_path} and customize it."
+        )
+    
     config = _load_podcasts_config(config_path)
     podcasts = config.get('podcasts', {})
     days_back = config.get('days_back', 7)
