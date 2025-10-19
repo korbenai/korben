@@ -1,54 +1,54 @@
 # Configuration Files
 
-This directory contains default and example configuration files for the project.
+This directory contains configuration files for the project.
 
-## Setup
+## Quick Setup
 
-### 1. Set your profiles path (optional)
 ```bash
-export PROFILES_PATH=~/profiles  # Default location
+# Copy the example to create your config
+cp config/podcasts.yml.example config/podcasts.yml
+
+# Edit your config
+vim config/podcasts.yml
 ```
 
-### 2. Copy example configs to your profiles directory
-```bash
-mkdir -p $PROFILES_PATH/scripts/config
-cp config/podcasts.yml.example $PROFILES_PATH/scripts/config/podcasts.yml
+Your `config/podcasts.yml` is gitignored and won't be committed.
+
+## Configuration Files
+
+- **`podcasts.yml.example`** - Example configuration (version controlled)
+- **`podcasts.yml`** - Your configuration (gitignored, you create this)
+
+## Podcasts Configuration
+
+Edit `config/podcasts.yml` to customize:
+
+```yaml
+# Number of days back to fetch podcasts
+days_back: 7
+
+# Podcast feeds (RSS URLs or Apple Podcasts URLs)
+podcasts:
+  my_podcast: "https://example.com/feed.xml"
+  another_podcast: "https://podcasts.apple.com/us/podcast/..."
 ```
-
-### 3. Customize your config
-Edit `$PROFILES_PATH/scripts/config/podcasts.yml` with your preferred podcast feeds.
-
-## Configuration Priority
-
-The application will look for configs in this order:
-1. `$PROFILES_PATH/scripts/config/podcasts.yml` (user-specific)
-2. `config/podcasts.yml` (fallback, if exists in repo)
-3. `config/podcasts.yml.example` (example only, not loaded)
 
 ## Environment Variables
 
 ### Podcasts Task
-- `PROFILES_PATH` - Base path for user configs (default: `~/profiles`)
 - `PODCASTS_PATH` - Where to download podcasts (default: `/tmp/podcasts/content`)
 - `PODCAST_TRANSCRIPT_PATH` - Where to save transcripts (default: `~/work/personal/drive/My Drive/podcasts/transcripts`)
-- `PERSONAL_EMAIL` - Email address for sending wisdom summaries
-- `POSTMARK_API_KEY` - API key for Postmark email service
+- `PERSONAL_EMAIL` - Email address for sending wisdom summaries (required)
+- `POSTMARK_API_KEY` - API key for Postmark email service (required)
 
 ### News Task
-- `MALLORY_API_KEY` - API key for Mallory cybersecurity news service
+- `MALLORY_API_KEY` - API key for Mallory cybersecurity news service (required)
 
-## File Locations
+## File Structure
 
 ```
-Repository (version controlled):
-├── config/
-│   ├── README.md
-│   └── podcasts.yml.example    # Example config
-
-User directory (not in git):
-└── $PROFILES_PATH/
-    └── scripts/
-        └── config/
-            └── podcasts.yml     # Your customized config
+config/
+├── README.md                 # This file
+├── podcasts.yml.example      # Example config (in git)
+└── podcasts.yml              # Your config (gitignored)
 ```
-
