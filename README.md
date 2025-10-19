@@ -1,2 +1,3 @@
 # core
-agentic core
+
+agentic automation for hackers
