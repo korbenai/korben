@@ -1,0 +1,26 @@
+[project]
+name = "core"
+version = "0.1.0"
+description = "personal agentic automation made easy"
+authors = [
+    {name = "Jonathan Cran", email = "jcran@korben.ai"},
+]
+dependencies = [
+    "controlflow",
+    "requests",
+    "getpodcast",
+    "pyyaml",
+    "openai-whisper",
+    "lxml",
+]
+requires-python = ">=3.13"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
