@@ -1,0 +1,30 @@
+# Example podcasts configuration
+# Copy this file to your PROFILES_PATH/scripts/config/podcasts.yml and customize
+
+# Number of days back to fetch podcasts
+days_back: 7
+
+# Podcast feeds
+podcasts:
+  # Tech & AI
+  conversations_with_tyler: "https://podcasts.apple.com/us/podcast/conversations-with-tyler/id983795625"
+  deep_future: "https://podcasts.apple.com/us/podcast/deep-future/id1499392701"
+  The AI Breakdown: "https://podcasts.apple.com/us/podcast/the-ai-breakdown/id1680633614"
+  The Cognitive Revolution: "https://podcasts.apple.com/us/podcast/the-cognitive-revolution/id1672221331"
+  
+  # Business & Economics
+  all in podcast: "https://podcasts.apple.com/us/podcast/all-in-with-chamath-jason-sacks-friedberg/id1502871393"
+  lennys_podcast: "https://podcasts.apple.com/us/podcast/lennys-podcast-product-growth-career/id1627920305"
+  odd_lots: "https://podcasts.apple.com/us/podcast/odd-lots/id1056200096"
+  
+  # Security & Tech
+  risky biz: "https://podcasts.apple.com/us/podcast/risky-business/id216478549"
+  darknet_diaries: "https://podcasts.apple.com/us/podcast/darknet-diaries/id1296350485"
+  enterprise security weekly: "https://podcasts.apple.com/us/podcast/enterprise-security-weekly/id356097302"
+  bhis_news: "https://podcasts.apple.com/us/podcast/bhis-news/id1530097511"
+  
+  # Other
+  MLOps.community: "https://podcasts.apple.com/us/podcast/mlops-community/id1505372978"
+  inside the network: "https://podcasts.apple.com/us/podcast/inside-the-network/id1490913678"
+  bare_knuckles_and_brass_tacks: "https://podcasts.apple.com/us/podcast/bare-knuckles-and-brass-tacks/id1571735981"
+
