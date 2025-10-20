@@ -61,25 +61,8 @@ def run(**kwargs):
     payload = {
         "text": slack_text,
     }
-    if "username" in kwargs:
-        payload["username"] = kwargs["username"]
-    if "icon_emoji" in kwargs:
-        payload["icon_emoji"] = kwargs["icon_emoji"]
 
-    try:
-        # Respect options in core.yml.example: username, icon_emoji, if present in config
-        # This does work for Slack "incoming webhooks" if the integration allows these fields to be set.
-        # Most custom incoming webhooks do allow "username" and "icon_emoji".
-        # Reference: https://api.slack.com/messaging/webhooks#advanced_message_formatting
-        config_username = hook.get("username")
-        config_icon_emoji = hook.get("icon_emoji")
-        if "username" not in payload and config_username:
-            payload["username"] = config_username
-        if "icon_emoji" not in payload and config_icon_emoji:
-            payload["icon_emoji"] = config_icon_emoji
-        # This approach will set "username" and "icon_emoji" in the message JSON payload;
-        # If the webhook's Slack integration is not a custom app, these fields may be ignored.
-        
+    try:   
         response = requests.post(hook_url, json=payload, timeout=10)
         response.raise_for_status()
         logger.info(f"Sent Slack message to '{hook_name}'.")
