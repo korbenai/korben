@@ -3,6 +3,7 @@
 import os
 import requests
 import controlflow as cf
+from src.lib.core_utils import get_agent_name
 
 def run(**kwargs):
     """Run mallory_stories task to fetch latest stories from Mallory API and summarize them."""
@@ -33,7 +34,7 @@ def run(**kwargs):
     )
     
     # Limit to 20 stories
-    sorted_stories = sorted_stories[:20]
+    sorted_stories = sorted_stories[:10]
     
     # Extract only title, description, uuid, and reference count from each story
     parsed_stories = []
@@ -47,8 +48,9 @@ def run(**kwargs):
         parsed_stories.append(parsed_story)
     
     # Create an agent to summarize the stories
+    agent_name = get_agent_name()
     summarizer = cf.Agent(
-        name="Korben",
+        name=agent_name,
         instructions="Review news stories and create concise 1-line summaries that capture the key point of each story. Include the reference count in parentheses and the URL at the end of each summary."
     )
     
