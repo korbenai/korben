@@ -5,7 +5,7 @@ import requests
 import controlflow as cf
 
 def run(**kwargs):
-    """Run the cybernews task to fetch latest stories from Mallory API and summarize them."""
+    """Run mallory_stories task to fetch latest stories from Mallory API and summarize them."""
     # Get API key from environment
     api_key = os.environ.get("MALLORY_API_KEY")
     if not api_key:
