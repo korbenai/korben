@@ -48,7 +48,7 @@ def run(**kwargs):
     
     # Create an agent to summarize the stories
     summarizer = cf.Agent(
-        name="News Summarizer",
+        name="Korben",
         instructions="Review news stories and create concise 1-line summaries that capture the key point of each story. Include the reference count in parentheses and the URL at the end of each summary."
     )
     
