@@ -213,3 +213,13 @@ config/*.yaml
 !config/*.example
 !config/*.yml.example
 !config/*.yaml.example
+
+# Data directory - all task data and state
+data/
+
+# Temporary directory - ephemeral files
+tmp/
+
+# Prefect
+.prefect/
+.prefectignore

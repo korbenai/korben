@@ -1,0 +1,9 @@
+# Core configuration
+# Copy this to config/core.yml and customize
+
+# Data directory for all task data
+data_dir: "data"
+
+# Temporary directory for ephemeral files
+tmp_dir: "tmp"
+
