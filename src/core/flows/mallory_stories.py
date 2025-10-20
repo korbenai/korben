@@ -3,9 +3,10 @@
 import os
 import logging
 import controlflow as cf
-from src.core.tasks import get_mallory_stories
+from src.core.tasks import fetch_mallory_stories
 from src.core.tasks import markdown_to_html
 from src.core.tasks import send_email
+from src.core.tasks import send_slack_hook
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +20,12 @@ def mallory_stories_workflow(**kwargs):
     1. Fetch stories from Mallory API
     2. Convert markdown to HTML
     3. Send email with story summaries
+    4. Send stories to Slack
     
     Args:
         recipient: Optional recipient email (defaults to PERSONAL_EMAIL env var)
         subject: Optional email subject (defaults to "Security Stories from Mallory")
+        slack_hook: Optional Slack hook name (defaults to "default")`
     
     Returns:
         str: Status message
@@ -32,7 +35,7 @@ def mallory_stories_workflow(**kwargs):
     # Step 1: Fetch stories from Mallory
     logger.info("Step 1: Fetching stories from Mallory API...")
     try:
-        stories = get_mallory_stories.run(**kwargs)
+        stories = fetch_mallory_stories.run(**kwargs)
         results.append("Successfully fetched and summarized stories from Mallory")
         logger.info(f"Fetched stories: {stories}")
     except Exception as e:
@@ -77,6 +80,24 @@ def mallory_stories_workflow(**kwargs):
         logger.info(f"Email sent successfully: {email_result}")
     except Exception as e:
         error_msg = f"Failed to send email: {e}"
+        logger.error(error_msg)
+        results.append(error_msg)
+    
+    # Step 4: Send stories to Slack
+    logger.info("Step 4: Sending stories to Slack...")
+    
+    hook_name = kwargs.get('slack_hook', 'default')
+    
+    try:
+        slack_message = f"*Latest Security Stories*\n\n{stories}"
+        slack_result = send_slack_hook.run(
+            hook_name=hook_name,
+            message=slack_message
+        )
+        results.append(slack_result)
+        logger.info(f"Slack message sent successfully: {slack_result}")
+    except Exception as e:
+        error_msg = f"Failed to send Slack message: {e}"
         logger.error(error_msg)
         results.append(error_msg)
     

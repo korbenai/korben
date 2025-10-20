@@ -2,6 +2,7 @@
 
 import sys
 import controlflow as cf
+from src.lib.core_utils import get_agent_name
 
 
 def extract_wisdom(text):
@@ -16,8 +17,9 @@ def extract_wisdom(text):
     """
     # Create wisdom extractor agent with detailed instructions
     # see https://github.com/danielmiessler/Fabric/edit/main/data/patterns/extract_wisdom/system.md for original
+    agent_name = get_agent_name()
     wisdom_agent = cf.Agent(
-        name="Korben",
+        name=agent_name,
         instructions="""
 # IDENTITY and PURPOSE
 

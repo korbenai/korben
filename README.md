@@ -17,8 +17,8 @@ Hackable personal automation framework, bing badda boom.
   - `transcribe_podcasts` - Convert audio to text using Whisper
   - Flow orchestrates generic tasks: `read_file` → `extract_wisdom` → `write_file` → `markdown_to_html` → `send_email`
 - **Mallory Stories Workflow** - Fetch and email cybersecurity stories:
-  - `get_mallory_stories` - Fetch and summarize latest stories from Mallory API
-  - Flow orchestrates: `get_mallory_stories` → `markdown_to_html` → `send_email`
+  - `fetch_mallory_stories` - Fetch and summarize latest stories from Mallory API
+  - Flow orchestrates: `fetch_mallory_stories` → `markdown_to_html` → `send_email`
 - **Entropy** - Example task demonstrating multi-agent AI collaboration
 - **CSV State Tracking** - Resume interrupted workflows without re-processing
 - **Composable Architecture** - Generic tasks composed via ControlFlow flows
@@ -94,7 +94,7 @@ Available tasks:
   - download_podcasts
   - entropy
   - extract_wisdom
-  - get_mallory_stories
+  - fetch_mallory_stories
   - markdown_to_html
   - read_file
   - send_email
@@ -128,7 +128,7 @@ pdm run python3 ./korben.py --task send_email --recipient you@example.com --subj
 pdm run python3 ./korben.py --task markdown_to_html --text "# Markdown text"
 
 # Fetch and summarize security stories from Mallory API
-pdm run python3 ./korben.py --task get_mallory_stories
+pdm run python3 ./korben.py --task fetch_mallory_stories
 
 # Extract wisdom from text
 echo "Your text here" | pdm run python3 ./korben.py --task extract_wisdom
@@ -163,7 +163,7 @@ This demonstrates **composability**: generic tasks are composed to build a compl
 Fetches cybersecurity stories from Mallory API, converts to HTML, and emails them.
 
 **Flow steps:**
-1. `get_mallory_stories` - Fetches top 20 stories sorted by reference count and generates AI summaries
+1. `fetch_mallory_stories` - Fetches top 20 stories sorted by reference count and generates AI summaries
 2. `markdown_to_html` - Converts story summaries to formatted HTML
 3. `send_email` - Sends formatted email
 
@@ -183,7 +183,7 @@ pdm run python3 ./korben.py --flow mallory_stories \
   --subject "Today's Security Stories"
 
 # Or run just the task to get stories (no email)
-pdm run python3 ./korben.py --task get_mallory_stories
+pdm run python3 ./korben.py --task fetch_mallory_stories
 ```
 
 **Output:** Each story includes title, description, reference count, and URL to Mallory's detailed analysis.
@@ -367,7 +367,7 @@ core/
 │   │       ├── send_email.py           # Sends email (generic)
 │   │       ├── read_file.py            # Reads file (generic)
 │   │       ├── write_file.py           # Writes file (generic)
-│   │       ├── get_mallory_stories.py  # Fetches security stories
+│   │       ├── fetch_mallory_stories.py  # Fetches security stories
 │   │       └── entropy.py
 │   └── lib/                   # Shared utilities
 │       ├── email.py           # Email sending via Postmark
@@ -411,7 +411,7 @@ def podcast_workflow(**kwargs):
 
 @cf.flow
 def mallory_stories_workflow(**kwargs):
-    stories = get_mallory_stories.run(**kwargs)         # Fetch stories
+    stories = fetch_mallory_stories.run(**kwargs)       # Fetch stories
     stories_html = markdown_to_html.run(text=stories)   # markdown → HTML
     send_email.run(recipient=email, subject=subject, content=stories_html)
 ```
@@ -434,7 +434,7 @@ def extract_wisdom(text):
 ```python
 TASKS = {
     "download_podcasts": download_podcasts.run,
-    "get_mallory_stories": get_mallory_stories.run,
+    "fetch_mallory_stories": fetch_mallory_stories.run,
     "extract_wisdom": extract_wisdom.run,
     "markdown_to_html": markdown_to_html.run,
     # ... other tasks
