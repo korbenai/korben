@@ -9,9 +9,6 @@
 #     PERSONAL_EMAIL         # Default recipient email for testing/dev (overridable by --recipient).
 # - For advanced configuration or troubleshooting, refer to the project README file.
 
-
-
-
 import os
 import logging
 from src.lib.email import send_email as send_email_lib
