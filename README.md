@@ -1,6 +1,8 @@
 # core
 
-Agentic automation built on  for hackers
+
+
+<img width="1024" height="1024" alt="korben4" src="https://github.com/user-attachments/assets/cee1e900-f23b-47eb-83c5-6cae2e811008" /> Hackable personal automation framework, bing badda boom.
 
 ## Features
 
