@@ -12,8 +12,10 @@ Agentic automation built on  for hackers
 - **Podcast Workflow** - ControlFlow flow demonstrating task composition:
   - `download_podcasts` - Download from RSS/Apple Podcasts feeds
   - `transcribe_podcasts` - Convert audio to text using Whisper
-  - Flow orchestrates generic tasks: `read_file` → `extract_wisdom` → `write_file` → `send_email`
-- **News** - Fetch and summarize latest cybersecurity headlines from Mallory API
+  - Flow orchestrates generic tasks: `read_file` → `extract_wisdom` → `write_file` → `markdown_to_html` → `send_email`
+- **Mallory Stories Workflow** - Fetch and email cybersecurity stories:
+  - `get_mallory_stories` - Fetch and summarize latest stories from Mallory API
+  - Flow orchestrates: `get_mallory_stories` → `markdown_to_html` → `send_email`
 - **Entropy** - Example task demonstrating multi-agent AI collaboration
 - **CSV State Tracking** - Resume interrupted workflows without re-processing
 - **Composable Architecture** - Generic tasks composed via ControlFlow flows
@@ -86,16 +88,18 @@ pdm run python3 ./run.py --list
 Output:
 ```
 Available tasks:
-  - cybernews
   - download_podcasts
   - entropy
   - extract_wisdom
+  - get_mallory_stories
+  - markdown_to_html
   - read_file
   - send_email
   - transcribe_podcasts
   - write_file
 
 Available flows:
+  - mallory_stories
   - podcasts
 ```
 
@@ -104,6 +108,10 @@ Available flows:
 ```bash
 # Run complete podcasts workflow (ControlFlow flow)
 pdm run python3 ./run.py --flow podcasts
+
+# Run Mallory stories workflow (fetch and email security news)
+pdm run python3 ./run.py --flow mallory_stories
+pdm run python3 ./run.py --flow mallory_stories --recipient custom@email.com --subject "Today's Security News"
 
 # Or run individual podcast tasks
 pdm run python3 ./run.py --task download_podcasts
@@ -114,9 +122,10 @@ pdm run python3 ./run.py --task read_file --file_path transcript.txt
 pdm run python3 ./run.py --task extract_wisdom --text "Your text..."
 pdm run python3 ./run.py --task write_file --file_path output.txt --content "Content"
 pdm run python3 ./run.py --task send_email --recipient you@example.com --subject "Test" --content "Hello"
+pdm run python3 ./run.py --task markdown_to_html --text "# Markdown text"
 
-# Run the cybersecurity news summarizer
-pdm run python3 ./run.py --task cybernews
+# Fetch and summarize security stories from Mallory API
+pdm run python3 ./run.py --task get_mallory_stories
 
 # Extract wisdom from text
 echo "Your text here" | pdm run python3 ./run.py --task extract_wisdom
@@ -145,12 +154,36 @@ This demonstrates **composability**: generic tasks are composed to build a compl
 
 **Data Storage:** `data/podcasts/` with CSV tracking to prevent re-processing
 
-### News Task
+### Mallory Stories Flow
 
-Fetches and summarizes cybersecurity stories from Mallory API.
+**Complete workflow** - `--flow mallory_stories`:  
+Fetches cybersecurity stories from Mallory API, converts to HTML, and emails them.
+
+**Flow steps:**
+1. `get_mallory_stories` - Fetches top 20 stories sorted by reference count and generates AI summaries
+2. `markdown_to_html` - Converts story summaries to formatted HTML
+3. `send_email` - Sends formatted email
 
 **Environment Variables:**
 - `MALLORY_API_KEY` - Mallory API key (required)
+- `PERSONAL_EMAIL` - Your email (default recipient)
+- `POSTMARK_API_KEY` - Postmark API key (required)
+
+**Usage:**
+```bash
+# Run complete flow with default recipient (PERSONAL_EMAIL)
+pdm run python3 ./run.py --flow mallory_stories
+
+# Specify recipient and subject
+pdm run python3 ./run.py --flow mallory_stories \
+  --recipient custom@email.com \
+  --subject "Today's Security Stories"
+
+# Or run just the task to get stories (no email)
+pdm run python3 ./run.py --task get_mallory_stories
+```
+
+**Output:** Each story includes title, description, reference count, and URL to Mallory's detailed analysis.
 
 ### Extract Wisdom Task
 
