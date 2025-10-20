@@ -54,7 +54,7 @@ cp config/podcasts.yml.example config/podcasts.yml
 vim config/podcasts.yml
 ```
 
-Run: `pdm run python3 ./run.py --flow podcasts`
+Run: `pdm run python3 ./korben.py --flow podcasts`
 
 ### Prefect Cloud (Optional)
 
@@ -82,7 +82,7 @@ prefect worker start --pool default-pool
 ### List Available Tasks
 
 ```bash
-pdm run python3 ./run.py --list
+pdm run python3 ./korben.py --list
 ```
 
 Output:
@@ -107,31 +107,31 @@ Available flows:
 
 ```bash
 # Run complete podcasts workflow (ControlFlow flow)
-pdm run python3 ./run.py --flow podcasts
+pdm run python3 ./korben.py --flow podcasts
 
 # Run Mallory stories workflow (fetch and email security news)
-pdm run python3 ./run.py --flow mallory_stories
-pdm run python3 ./run.py --flow mallory_stories --recipient custom@email.com --subject "Today's Security News"
+pdm run python3 ./korben.py --flow mallory_stories
+pdm run python3 ./korben.py --flow mallory_stories --recipient custom@email.com --subject "Today's Security News"
 
 # Or run individual podcast tasks
-pdm run python3 ./run.py --task download_podcasts
-pdm run python3 ./run.py --task transcribe_podcasts
+pdm run python3 ./korben.py --task download_podcasts
+pdm run python3 ./korben.py --task transcribe_podcasts
 
 # Use generic tasks independently
-pdm run python3 ./run.py --task read_file --file_path transcript.txt
-pdm run python3 ./run.py --task extract_wisdom --text "Your text..."
-pdm run python3 ./run.py --task write_file --file_path output.txt --content "Content"
-pdm run python3 ./run.py --task send_email --recipient you@example.com --subject "Test" --content "Hello"
-pdm run python3 ./run.py --task markdown_to_html --text "# Markdown text"
+pdm run python3 ./korben.py --task read_file --file_path transcript.txt
+pdm run python3 ./korben.py --task extract_wisdom --text "Your text..."
+pdm run python3 ./korben.py --task write_file --file_path output.txt --content "Content"
+pdm run python3 ./korben.py --task send_email --recipient you@example.com --subject "Test" --content "Hello"
+pdm run python3 ./korben.py --task markdown_to_html --text "# Markdown text"
 
 # Fetch and summarize security stories from Mallory API
-pdm run python3 ./run.py --task get_mallory_stories
+pdm run python3 ./korben.py --task get_mallory_stories
 
 # Extract wisdom from text
-echo "Your text here" | pdm run python3 ./run.py --task extract_wisdom
+echo "Your text here" | pdm run python3 ./korben.py --task extract_wisdom
 
 # Run the entropy example
-pdm run python3 ./run.py --task entropy
+pdm run python3 ./korben.py --task entropy
 ```
 
 ### Podcasts Flow
@@ -172,15 +172,15 @@ Fetches cybersecurity stories from Mallory API, converts to HTML, and emails the
 **Usage:**
 ```bash
 # Run complete flow with default recipient (PERSONAL_EMAIL)
-pdm run python3 ./run.py --flow mallory_stories
+pdm run python3 ./korben.py --flow mallory_stories
 
 # Specify recipient and subject
-pdm run python3 ./run.py --flow mallory_stories \
+pdm run python3 ./korben.py --flow mallory_stories \
   --recipient custom@email.com \
   --subject "Today's Security Stories"
 
 # Or run just the task to get stories (no email)
-pdm run python3 ./run.py --task get_mallory_stories
+pdm run python3 ./korben.py --task get_mallory_stories
 ```
 
 **Output:** Each story includes title, description, reference count, and URL to Mallory's detailed analysis.
@@ -201,10 +201,10 @@ Pure text processing task that extracts comprehensive insights from text. Uses a
 **Usage:**
 ```bash
 # Extract wisdom from text argument
-pdm run python3 ./run.py --task extract_wisdom --text "Your text here..."
+pdm run python3 ./korben.py --task extract_wisdom --text "Your text here..."
 
 # Extract wisdom from stdin (pipe)
-cat transcript.txt | pdm run python3 ./run.py --task extract_wisdom
+cat transcript.txt | pdm run python3 ./korben.py --task extract_wisdom
 ```
 
 **Output:** Structured markdown formatted for easy reading and HTML conversion.
@@ -216,24 +216,24 @@ cat transcript.txt | pdm run python3 ./run.py --task extract_wisdom
 **Read File:**
 ```bash
 # Relative path (reads from tmp/ directory)
-pdm run python3 ./run.py --task read_file --file_path myfile.txt
+pdm run python3 ./korben.py --task read_file --file_path myfile.txt
 
 # Absolute path
-pdm run python3 ./run.py --task read_file --file_path /absolute/path/to/file.txt
+pdm run python3 ./korben.py --task read_file --file_path /absolute/path/to/file.txt
 ```
 
 **Write File:**
 ```bash
 # Relative path (writes to tmp/ directory)
-pdm run python3 ./run.py --task write_file --file_path output.txt --content "Content"
+pdm run python3 ./korben.py --task write_file --file_path output.txt --content "Content"
 
 # Absolute path
-pdm run python3 ./run.py --task write_file --file_path /absolute/path/output.txt --content "Content"
+pdm run python3 ./korben.py --task write_file --file_path /absolute/path/output.txt --content "Content"
 ```
 
 **Send Email:**
 ```bash
-pdm run python3 ./run.py --task send_email \
+pdm run python3 ./korben.py --task send_email \
   --recipient you@example.com \
   --subject "Subject" \
   --content "Body"
@@ -326,7 +326,7 @@ CSV tracker prevents re-processing and allows resuming interrupted workflows.
 
 3. **Run it:**
    ```bash
-   pdm run python3 ./run.py --task your_task
+   pdm run python3 ./korben.py --task your_task
    ```
 
 ## Project Structure
@@ -372,7 +372,7 @@ core/
 │       ├── podcast_utils.py   # Podcast tracking & config
 │       └── core_utils.py      # Core config utilities
 ├── tests/
-├── run.py                     # Main CLI entry point
+├── korben.py                  # Main CLI entry point
 ├── pyproject.toml             # Dependencies
 └── README.md                  # This file
 ```
@@ -429,8 +429,17 @@ def extract_wisdom(text):
 
 **Registry** (`src/core/registry.py`) - Maps names to tasks and flows:
 ```python
-TASKS = {"download_podcasts": download_podcasts.run, ...}
-FLOWS = {"podcasts": podcast_workflow}
+TASKS = {
+    "download_podcasts": download_podcasts.run,
+    "get_mallory_stories": get_mallory_stories.run,
+    "extract_wisdom": extract_wisdom.run,
+    "markdown_to_html": markdown_to_html.run,
+    # ... other tasks
+}
+FLOWS = {
+    "podcasts": podcast_workflow,
+    "mallory_stories": mallory_stories_workflow,
+}
 ```
 
 This follows ControlFlow best practices: tasks are independent, flows orchestrate, `cf.run()` for AI.
@@ -454,8 +463,8 @@ See `pyproject.toml` for complete list.
 
 ```bash
 # Run workflows locally
-pdm run python3 ./run.py --flow podcasts
-pdm run python3 ./run.py --task download_podcasts
+pdm run python3 ./korben.py --flow podcasts
+pdm run python3 ./korben.py --task download_podcasts
 ```
 
 ### Prefect Cloud (Production)
