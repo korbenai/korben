@@ -17,9 +17,6 @@ agent_name: "Korben"
 slack_hooks:
   default:
     hook_url: "https://hooks.slack.com/services/your/alerts/webhook"
-    # Optional: Customize the bot's username and icon
-    # username: "KorbenBot"
-    # icon_emoji: ":robot_face:"
   # Add more hooks as needed, e.g.:
   # high-priority:
   #   hook_url: "https://hooks.slack.com/services/your/ops/webhook"
