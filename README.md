@@ -1,7 +1,9 @@
-# core
+# what is korben
 
+<img alt="Korben" width="20%" style="border:none;box-shadow:none;" src="https://github.com/user-attachments/assets/cee1e900-f23b-47eb-83c5-6cae2e811008"  /> 
 
-<img alt="Korben" width="20%" style="border:none;box-shadow:none;" src="https://github.com/user-attachments/assets/cee1e900-f23b-47eb-83c5-6cae2e811008"  /> Hackable personal automation framework, bing badda boom.
+Hackable personal automation framework, bing badda boom.
+
 
 ## Features
 
