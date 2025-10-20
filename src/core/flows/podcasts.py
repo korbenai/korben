@@ -6,7 +6,7 @@ from src.core.tasks import download_podcasts
 from src.core.tasks import transcribe_podcasts
 from src.core.tasks import read_file
 from src.core.tasks import write_file
-from src.core.tasks.extract_wisdom import extract_wisdom
+from src.core.tasks import extract_wisdom
 from src.core.tasks import markdown_to_html
 from src.core.tasks import send_email
 from src.lib.podcast_utils import get_data_dir, get_tracking_csv, get_podcast_status, update_podcast_status
