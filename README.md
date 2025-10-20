@@ -354,15 +354,17 @@ core/
 │   ├── core/
 │   │   ├── registry.py        # Task & flow registry
 │   │   ├── flows/             # ControlFlow orchestrations
-│   │   │   └── podcasts.py    # Podcast workflow flow
+│   │   │   ├── podcasts.py    # Podcast workflow flow
+│   │   │   └── mallory_stories.py  # Mallory stories workflow flow
 │   │   └── tasks/             # Task implementations
 │   │       ├── download_podcasts.py    # Downloads podcasts
 │   │       ├── transcribe_podcasts.py  # Transcribes to text
 │   │       ├── extract_wisdom.py       # Extracts wisdom from text (generic)
+│   │       ├── markdown_to_html.py     # Converts markdown to HTML (generic)
 │   │       ├── send_email.py           # Sends email (generic)
 │   │       ├── read_file.py            # Reads file (generic)
 │   │       ├── write_file.py           # Writes file (generic)
-│   │       ├── cybernews.py
+│   │       ├── get_mallory_stories.py  # Fetches security stories
 │   │       └── entropy.py
 │   └── lib/                   # Shared utilities
 │       ├── email.py           # Email sending via Postmark
@@ -403,6 +405,12 @@ def podcast_workflow(**kwargs):
     # Process each transcript using generic tasks
     for transcript in transcripts:
         process_single_transcript(transcript, email)
+
+@cf.flow
+def mallory_stories_workflow(**kwargs):
+    stories = get_mallory_stories.run(**kwargs)         # Fetch stories
+    stories_html = markdown_to_html.run(text=stories)   # markdown → HTML
+    send_email.run(recipient=email, subject=subject, content=stories_html)
 ```
 
 **AI Operations** use `cf.run()` for agent-based processing:
