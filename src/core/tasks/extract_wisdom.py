@@ -17,7 +17,7 @@ def extract_wisdom(text):
     # Create wisdom extractor agent with detailed instructions
     # see https://github.com/danielmiessler/Fabric/edit/main/data/patterns/extract_wisdom/system.md for original
     wisdom_agent = cf.Agent(
-        name="Wisdom Extractor",
+        name="Korben",
         instructions="""
 # IDENTITY and PURPOSE
 
