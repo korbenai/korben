@@ -1,5 +1,14 @@
 """Send email task - sends an email via Postmark API."""
 
+# Configuration Notes (see README for more):
+# - Uses Postmark for transactional email delivery.
+# - Required environment variables:
+#     POSTMARK_SERVER_TOKEN  # Your Postmark API token.
+# - Optional environment variables:
+#     POSTMARK_FROM_EMAIL    # Default sender email address (overridable in code).
+#     PERSONAL_EMAIL         # Default recipient email for testing/dev (overridable by --recipient).
+# - For advanced configuration or troubleshooting, refer to the project README file.
+
 import os
 import logging
 from src.lib.email import send_email as send_email_lib

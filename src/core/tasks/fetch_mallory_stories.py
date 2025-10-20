@@ -1,4 +1,19 @@
-"""News task - fetches and summarizes latest cybersecurity headlines."""
+
+"""Cyber News task - fetches and summarizes latest cybersecurity headlines."""
+"""
+Configuration:
+--------------
+This task requires access to the Mallory API in order to fetch the latest cybersecurity stories.
+
+**Required Environment Variable**:
+- `MALLORY_API_KEY`: You must set this environment variable with your Mallory API access key.
+
+Example:
+    export MALLORY_API_KEY='your_real_mallory_api_key'
+
+If `MALLORY_API_KEY` is not set, the task will raise a ValueError and cannot continue.
+"""
+
 
 import os
 import requests
