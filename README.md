@@ -32,6 +32,21 @@ Out of the box capabilities:
 - **Books Discovery** - Find and recommend books:
   - `search_books` - Search ISBNdb for books by query, subject, or author
   - `trending_ai_books` - Get trending AI books and email recommendations
+- **GitHub Integration** - Create and share gists:
+  - `create_gist_from_file` - Create a GitHub gist from a single file
+  - `create_gist_from_directory` - Create a gist from all files in a directory
+- **Linear Integration** - Manage Linear tickets:
+  - `get_linear_tickets` - Fetch Linear tickets by user and status
+  - `list_linear_states` - List all available workflow states
+  - `linear_status_report` - Generate and email a status report
+- **Google Calendar** - Calendar event management:
+  - `get_calendar_events` - Retrieve calendar events for date ranges
+- **AWS S3** - Cloud storage operations:
+  - `create_bucket` / `delete_bucket` - Manage S3 buckets
+  - `upload_file_to_s3` / `read_file_from_s3` - File operations
+  - `share_file` - Quickly share files via temporary public URLs
+- **Slack Integration** - Send notifications:
+  - `send_slack_hook` - Send messages via Slack webhooks
 
 ## Plugin Architecture
 
@@ -39,13 +54,18 @@ Korben uses an **auto-discovery plugin system** - plugins are automatically regi
 
 ```
 src/plugins/
-├── movies/       # TMDB movie discovery and recommendations
-├── books/        # ISBNdb book search and recommendations
-├── podcasts/     # Podcast download, transcribe, wisdom extraction
-├── mallory/      # Cybersecurity news from Mallory API
-├── email/        # Email delivery via Postmark
-├── slack/        # Slack notifications via webhooks
-└── utilities/    # Generic file I/O and text processing
+├── movies/          # TMDB movie discovery and recommendations
+├── books/           # ISBNdb book search and recommendations
+├── podcasts/        # Podcast download, transcribe, wisdom extraction
+├── mallory/         # Cybersecurity news from Mallory API
+├── github/          # Create and share GitHub gists
+├── linear/          # Linear ticket management and reporting
+├── google_calendar/ # Google Calendar integration
+├── aws_s3/          # AWS S3 bucket and file operations
+├── share_file/      # Quick file sharing via S3
+├── email/           # Email delivery via Postmark
+├── slack/           # Slack notifications via webhooks
+└── utilities/       # Generic file I/O and text processing
 ```
 
 ### Plugin Structure
@@ -113,6 +133,11 @@ export POSTMARK_API_KEY="your-postmark-api-key"
 export MALLORY_API_KEY="your-mallory-api-key"
 export TMDB_API_KEY="your-tmdb-api-key"        # Get from https://www.themoviedb.org/settings/api
 export ISBNDB_API_KEY="your-isbndb-api-key"    # Get from https://isbndb.com/isbn-database
+export GITHUB_API_KEY="your-github-pat"        # Get from https://github.com/settings/tokens
+export LINEAR_API_KEY="your-linear-api-key"    # Get from https://linear.app/settings/api
+export AWS_ACCESS_KEY_ID="your-aws-key"        # AWS credentials
+export AWS_SECRET_ACCESS_KEY="your-aws-secret"
+export AWS_REGION="us-east-2"                  # Optional, defaults to us-east-2
 ```
 
 **Per-task config:**
@@ -156,17 +181,32 @@ pdm run python3 ./korben.py --list
 Output:
 ```
 Available tasks:
+  - create_bucket
+  - create_gist_from_directory
+  - create_gist_from_file
+  - delete_bucket
+  - discover_movies
   - download_podcasts
   - entropy
   - extract_wisdom
   - fetch_mallory_stories
+  - get_book_details
+  - get_calendar_events
+  - get_linear_tickets
+  - list_linear_states
   - markdown_to_html
   - read_file
+  - read_file_from_s3
+  - search_books
   - send_email
+  - send_slack_hook
+  - share_file
   - transcribe_podcasts
+  - upload_file_to_s3
   - write_file
 
 Available flows:
+  - linear_status_report
   - mallory_stories
   - podcast
   - popular_movies
@@ -211,6 +251,26 @@ pdm run python3 ./korben.py --flow popular_movies
 # Get trending AI books and send via email
 pdm run python3 ./korben.py --flow trending_ai_books
 pdm run python3 ./korben.py --flow trending_ai_books --query "machine learning" --limit 10
+
+# Create GitHub gists for sharing code
+pdm run python3 ./korben.py --task create_gist_from_file --file_path /path/to/script.py --description "My script"
+pdm run python3 ./korben.py --task create_gist_from_directory --directory_path /path/to/project --description "Project files"
+
+# Get Linear tickets and generate status reports
+pdm run python3 ./korben.py --task get_linear_tickets
+pdm run python3 ./korben.py --task list_linear_states
+pdm run python3 ./korben.py --flow linear_status_report
+
+# Get Google Calendar events
+pdm run python3 ./korben.py --task get_calendar_events --days 7
+pdm run python3 ./korben.py --task get_calendar_events --accounts "user@example.com" --date "2025-11-05"
+
+# AWS S3 file operations
+pdm run python3 ./korben.py --task create_bucket --bucket_name my-bucket
+pdm run python3 ./korben.py --task share_file --file /path/to/file.pdf --expiration 3
+
+# Send Slack notifications
+pdm run python3 ./korben.py --task send_slack_hook --message "Hello from Korben!"
 
 # Extract wisdom from text
 echo "Your text here" | pdm run python3 ./korben.py --task extract_wisdom
@@ -369,6 +429,237 @@ pdm run python3 ./korben.py --task get_book_details --isbn "9780262046244"
 
 **Output:** Formatted email with book title, author(s), publisher, publication date, ISBN, and synopsis.
 
+### GitHub Plugin
+
+**Complete functionality** - Create and share GitHub gists:
+
+Create gists from individual files or entire directories. Perfect for quickly sharing code snippets, configuration files, or small projects.
+
+**Environment Variables:**
+- `GITHUB_API_KEY` - GitHub Personal Access Token (required) - Get from https://github.com/settings/tokens
+  - Required scope: `gist`
+
+**Usage:**
+```bash
+# Create a public gist from a single file
+pdm run python3 ./korben.py --task create_gist_from_file \
+  --file_path /path/to/script.py \
+  --description "My Python script"
+
+# Create a secret/private gist
+pdm run python3 ./korben.py --task create_gist_from_file \
+  --file_path ~/notes.md \
+  --description "Private notes" \
+  --public false
+
+# Create a gist from all files in a directory
+pdm run python3 ./korben.py --task create_gist_from_directory \
+  --directory_path /path/to/project \
+  --description "Project configuration files"
+```
+
+**Features:**
+- **Single file gists**: Share individual files with syntax highlighting
+- **Directory gists**: Share multiple related files in one gist
+- **Public or private**: Control gist visibility
+- **Binary file handling**: Automatically skips binary files when creating directory gists
+
+**Output:** Returns the URL of the created gist for easy sharing.
+
+### Linear Plugin
+
+**Complete functionality** - Manage Linear tickets and generate status reports:
+
+Fetch Linear tickets, list workflow states, and generate formatted status reports via email.
+
+**Environment Variables:**
+- `LINEAR_API_KEY` - Linear Personal API Key (required) - Get from https://linear.app/settings/api
+
+**Configuration:**
+```bash
+cp src/plugins/linear/config.yml.example src/plugins/linear/config.yml
+```
+
+Edit `config.yml`:
+```yaml
+api_key: "lin_api_xxxxxxxxxxxxx"
+username: "your_username"
+statuses: "In Progress,Todo"
+```
+
+**Usage:**
+```bash
+# Fetch your current tickets
+pdm run python3 ./korben.py --task get_linear_tickets
+
+# Fetch tickets with custom status filter
+pdm run python3 ./korben.py --task get_linear_tickets --statuses "Blocked,In Review"
+
+# List all available workflow states in your workspace
+pdm run python3 ./korben.py --task list_linear_states
+
+# Generate and email a status report
+pdm run python3 ./korben.py --flow linear_status_report
+```
+
+**Features:**
+- **Ticket fetching**: Get tickets by user and workflow status
+- **Status listing**: See all available workflow states
+- **Status reports**: Automated email reports of ticket status
+- **Rich metadata**: Includes labels, priority, team, project, due dates
+
+**Output:** Tickets saved as JSON with full metadata, or formatted HTML email report.
+
+### Google Calendar Plugin
+
+**Complete functionality** - Retrieve calendar events:
+
+Fetch calendar events for specified date ranges using Google service accounts with domain-wide delegation support.
+
+**Setup:**
+1. Create a Google Cloud project and enable Calendar API
+2. Create a service account and download JSON credentials
+3. Place credentials in `~/.google/credentials/{domain}/credentials.json`
+4. Share calendar with service account email
+
+**Configuration:**
+```bash
+cp src/plugins/google_calendar/config.yml.example src/plugins/google_calendar/config.yml
+```
+
+**Usage:**
+```bash
+# Get today's events for all configured accounts
+pdm run python3 ./korben.py --task get_calendar_events
+
+# Get events for a specific account
+pdm run python3 ./korben.py --task get_calendar_events \
+  --accounts "user@example.com"
+
+# Get events for multiple accounts
+pdm run python3 ./korben.py --task get_calendar_events \
+  --accounts "user1@example.com,user2@example.com"
+
+# Get events for next 7 days
+pdm run python3 ./korben.py --task get_calendar_events --days 7
+
+# Get events for specific date range
+pdm run python3 ./korben.py --task get_calendar_events \
+  --start_date "2025-11-01" \
+  --end_date "2025-11-07"
+```
+
+**Features:**
+- **Multi-account support**: Query multiple calendars in one call
+- **Flexible date queries**: Today, specific dates, or date ranges
+- **Domain-based credentials**: Auto-finds credentials by email domain
+- **Rich event data**: Includes attendees, location, descriptions, meeting links
+
+**Output:** Returns JSON with events grouped by account, including full event details.
+
+### AWS S3 Plugin
+
+**Complete functionality** - Manage S3 buckets and files:
+
+Create/delete buckets, upload/download files, with support for public access and lifecycle policies.
+
+**Environment Variables:**
+- `AWS_ACCESS_KEY_ID` - AWS access key (required)
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key (required)
+- `AWS_REGION` - AWS region (optional, default: us-east-2)
+
+**Usage:**
+```bash
+# Create a private bucket
+pdm run python3 ./korben.py --task create_bucket --bucket_name my-bucket
+
+# Create a public bucket with 7-day expiration
+pdm run python3 ./korben.py --task create_bucket \
+  --bucket_name my-public-bucket \
+  --allow_public true \
+  --expiration_days 7
+
+# Delete a bucket and all its contents
+pdm run python3 ./korben.py --task delete_bucket --bucket_name my-bucket
+```
+
+**Features:**
+- **Bucket management**: Create and delete buckets with policies
+- **Public access control**: Configure buckets for public access
+- **Lifecycle policies**: Auto-expire objects after N days
+- **File operations**: Upload and download files (via Python API)
+
+**Warning:** Bucket deletion is irreversible and removes all objects!
+
+### Share File Plugin
+
+**Complete functionality** - Quick file sharing via temporary S3 URLs:
+
+Upload files to temporary public S3 buckets with auto-expiration. Perfect for quick file sharing.
+
+**Dependencies:** Requires the `aws_s3` plugin and AWS credentials.
+
+**Usage:**
+```bash
+# Share a file with 3-day expiration (default)
+pdm run python3 ./korben.py --task share_file --file /path/to/document.pdf
+
+# Share with custom expiration
+pdm run python3 ./korben.py --task share_file \
+  --file /path/to/report.pdf \
+  --expiration 7
+```
+
+**Features:**
+- **One-command sharing**: Creates bucket, uploads file, returns URL
+- **Auto-expiration**: Buckets and files automatically delete after N days
+- **Unique URLs**: Uses UUIDs for hard-to-guess URLs
+- **Public access**: No authentication required to access shared files
+
+**Output:** Returns shareable HTTPS URL that expires after specified days.
+
+**Use cases:** Share large files, screenshots, logs, reports, or temporary downloads.
+
+### Slack Plugin
+
+**Complete functionality** - Send messages via Slack webhooks:
+
+Send notifications to Slack channels using incoming webhooks.
+
+**Environment Variables:**
+- `SLACK_WEBHOOK_URL` - Slack incoming webhook URL (optional fallback)
+
+**Configuration:**
+```bash
+cp src/plugins/slack/config.yml.example src/plugins/slack/config.yml
+```
+
+Edit `config.yml`:
+```yaml
+variables:
+  hook_name: "default"
+  webhooks:
+    default: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    alerts: "https://hooks.slack.com/services/YOUR/ALERTS/WEBHOOK"
+```
+
+**Usage:**
+```bash
+# Send to default webhook
+pdm run python3 ./korben.py --task send_slack_hook \
+  --message "Deployment complete!"
+
+# Send to specific webhook
+pdm run python3 ./korben.py --task send_slack_hook \
+  --message "Critical alert!" \
+  --hook_name "alerts"
+```
+
+**Features:**
+- **Multiple webhooks**: Configure different webhooks for different channels
+- **Simple interface**: Just provide message text
+- **Integration ready**: Use in flows to notify about completed tasks
+
 ### Extract Wisdom Task
 
 Pure text processing task that extracts comprehensive insights from text. Uses a detailed extraction framework to pull out:
@@ -444,11 +735,22 @@ tmp_dir: "tmp"    # Where temporary files are stored
 
 **Environment Variables** (add to `~/.zshrc` or `~/.bashrc`):
 ```bash
+# Core email and notifications
 export PERSONAL_EMAIL="your@email.com"
-export POSTMARK_API_KEY="your-postmark-api-key"  
+export POSTMARK_API_KEY="your-postmark-api-key"
+export SLACK_WEBHOOK_URL="your-slack-webhook-url"
+
+# API integrations
 export MALLORY_API_KEY="your-mallory-api-key"
 export TMDB_API_KEY="your-tmdb-api-key"
 export ISBNDB_API_KEY="your-isbndb-api-key"
+export GITHUB_API_KEY="your-github-pat"
+export LINEAR_API_KEY="your-linear-api-key"
+
+# AWS credentials
+export AWS_ACCESS_KEY_ID="your-aws-key"
+export AWS_SECRET_ACCESS_KEY="your-aws-secret"
+export AWS_REGION="us-east-2"
 ```
 
 ### Plugin Configuration
@@ -510,6 +812,52 @@ vim src/plugins/podcasts/config.yml
 days_back: 7
 podcasts:
   my_podcast: "https://example.com/feed.xml"
+```
+
+**GitHub Plugin:**
+```bash
+cp src/plugins/github/config.yml.example src/plugins/github/config.yml
+```
+
+```yaml
+variables:
+  default_description: "Gist created by Korben"
+  public: true
+```
+
+**Linear Plugin:**
+```bash
+cp src/plugins/linear/config.yml.example src/plugins/linear/config.yml
+```
+
+```yaml
+api_key: "lin_api_xxxxxxxxxxxxx"
+username: "your_username"
+statuses: "In Progress,Todo"
+```
+
+**Google Calendar Plugin:**
+```bash
+cp src/plugins/google_calendar/config.yml.example src/plugins/google_calendar/config.yml
+```
+
+```yaml
+variables:
+  accounts:
+    - "you@example.com"
+  max_results: 100
+```
+
+**Slack Plugin:**
+```bash
+cp src/plugins/slack/config.yml.example src/plugins/slack/config.yml
+```
+
+```yaml
+variables:
+  hook_name: "default"
+  webhooks:
+    default: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 ```
 
 ### Data Storage
@@ -613,35 +961,66 @@ korben/
 │       ├── wisdom/            # Wisdom summaries
 │       └── podcasts.csv       # State tracker
 ├── src/
-│   ├── core/
-│   │   ├── registry.py        # Task & flow registry
-│   │   └── plugins/           # 🆕 Self-contained plugin modules
-│   │       ├── movies/        # TMDB movie discovery
-│   │       │   ├── tasks.py   # discover_movies
-│   │       │   ├── flows.py   # trending_movies, popular_movies
-│   │       │   ├── lib.py     # TMDB API client
-│   │       │   ├── config.yml.example  # Plugin configuration template
-│   │       │   └── README.md
-│   │       ├── books/         # ISBNdb book search
-│   │       │   ├── tasks.py   # search_books, get_book_details
-│   │       │   ├── flows.py   # trending_ai_books
-│   │       │   ├── lib.py     # ISBNdb API client
-│   │       │   ├── config.yml.example  # Plugin configuration template
-│   │       │   └── README.md
-│   │       ├── podcasts/      # Podcast processing
-│   │       │   ├── tasks.py   # download_podcasts, transcribe_podcasts
-│   │       │   ├── flows.py   # podcast_workflow
-│   │       │   ├── lib.py     # podcast_utils, whisper
-│   │       │   └── README.md
-│   │       ├── mallory/       # Cybersecurity news
-│   │       │   ├── tasks.py   # fetch_mallory_stories
-│   │       │   ├── flows.py   # mallory_stories_workflow
-│   │       │   ├── config.yml.example  # Plugin configuration template
-│   │       │   └── README.md
-│   │       └── utilities/     # Generic reusable tasks
-│   │           ├── tasks.py   # send_email, read_file, write_file, etc.
-│   │           ├── lib.py     # email client
-│   │           └── README.md
+│   ├── registry.py            # Task & flow auto-discovery registry
+│   ├── plugins/               # 🆕 Self-contained plugin modules
+│   │   ├── movies/            # TMDB movie discovery
+│   │   │   ├── tasks.py       # discover_movies
+│   │   │   ├── flows.py       # trending_movies, popular_movies
+│   │   │   ├── lib.py         # TMDB API client
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── books/             # ISBNdb book search
+│   │   │   ├── tasks.py       # search_books, get_book_details
+│   │   │   ├── flows.py       # trending_ai_books
+│   │   │   ├── lib.py         # ISBNdb API client
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── podcasts/          # Podcast processing
+│   │   │   ├── tasks.py       # download_podcasts, transcribe_podcasts
+│   │   │   ├── flows.py       # podcast_workflow
+│   │   │   ├── lib.py         # podcast_utils, whisper
+│   │   │   └── README.md
+│   │   ├── mallory/           # Cybersecurity news
+│   │   │   ├── tasks.py       # fetch_mallory_stories
+│   │   │   ├── flows.py       # mallory_stories_workflow
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── github/            # GitHub gist creation
+│   │   │   ├── tasks.py       # create_gist_from_file, create_gist_from_directory
+│   │   │   ├── lib.py         # GitHub API client
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── linear/            # Linear ticket management
+│   │   │   ├── tasks.py       # get_linear_tickets, list_linear_states
+│   │   │   ├── flows.py       # linear_status_report
+│   │   │   ├── lib.py         # Linear GraphQL client
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── google_calendar/   # Google Calendar integration
+│   │   │   ├── tasks.py       # get_calendar_events
+│   │   │   ├── lib.py         # Calendar API client
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── aws_s3/            # AWS S3 operations
+│   │   │   ├── tasks.py       # create_bucket, delete_bucket, upload/download
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── share_file/        # Quick file sharing
+│   │   │   ├── tasks.py       # share_file (uses aws_s3)
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── email/             # Email delivery
+│   │   │   ├── tasks.py       # send_email
+│   │   │   ├── lib.py         # Postmark client
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   ├── slack/             # Slack notifications
+│   │   │   ├── tasks.py       # send_slack_hook
+│   │   │   ├── config.yml.example
+│   │   │   └── README.md
+│   │   └── utilities/         # Generic reusable tasks
+│   │       ├── tasks.py       # read_file, write_file, extract_wisdom, etc.
+│   │       └── README.md
 │   └── lib/                   # Shared core utilities
 │       └── core_utils.py      # Config access (used by all plugins)
 ├── examples/
@@ -663,6 +1042,11 @@ plugins/
 ├── books/           # Book search (ISBNdb)
 ├── podcasts/        # Podcast processing
 ├── mallory/         # Security news
+├── github/          # GitHub gist creation
+├── linear/          # Linear ticket management
+├── google_calendar/ # Google Calendar integration
+├── aws_s3/          # AWS S3 operations
+├── share_file/      # Quick file sharing
 ├── email/           # Email delivery (Postmark)
 ├── slack/           # Slack notifications
 └── utilities/       # Generic file & text processing
