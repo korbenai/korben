@@ -6,6 +6,7 @@ import uuid
 import boto3
 from botocore.exceptions import ClientError
 from src.plugins.aws_s3.tasks import create_bucket, upload_file_to_s3
+from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
 
 # Declare dependency on aws_s3 plugin
 __dependencies__ = ['aws_s3']
@@ -20,15 +21,22 @@ def share_file(**kwargs):
     This is a convenience task that creates a temporary public bucket with an expiration policy,
     uploads a file, and returns a public URL that can be shared.
     
+    Config file: src/plugins/share_file/config.yml (optional)
+    
     Args:
         file (str): Path to the file to be uploaded
-        expiration (int, optional): Number of days after which the file will expire (default: 3)
+        expiration (int, optional): Number of days after which the file will expire (default: from config or 3)
     
     Returns:
         str: Public URL to the uploaded file or error message
     """
-    file_path = kwargs.get('file')
-    expiration_days = kwargs.get('expiration', 3)
+    # Load plugin config and merge with kwargs
+    config = get_plugin_config('share_file')
+    params = merge_config_with_kwargs(config, kwargs)
+    config_vars = config.get('variables', {})
+    
+    file_path = params.get('file')
+    expiration_days = params.get('expiration') or config_vars.get('expiration', 3)
     
     if not file_path:
         error_msg = "ERROR: No file specified. Provide --file."

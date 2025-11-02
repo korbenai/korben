@@ -4,6 +4,7 @@ import logging
 import json
 import datetime
 from src.plugins.movies.lib import TMDBService
+from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
 
 logger = logging.getLogger(__name__)
 
@@ -12,26 +13,33 @@ def discover_movies(**kwargs) -> str:
     """
     Discover movies from TMDB based on search criteria.
     
+    Config file: src/plugins/movies/config.yml (optional)
+    
     Args:
         genres: Comma-separated genre IDs (e.g., "28,878" for Action & Sci-Fi)
-        min_rating: Minimum vote average (0-10)
-        min_votes: Minimum vote count (default: 100)
+        min_rating: Minimum vote average (0-10, default: from config or 7.0)
+        min_votes: Minimum vote count (default: from config or 100)
         min_runtime: Minimum runtime in minutes (default: 60)
         max_runtime: Maximum runtime in minutes
         start_year: Start year for filtering (default: current year)
         years_back: How many years back from current (alternative to start_year)
         sort_by: Sort order (default: "popularity.desc")
-        limit: Maximum number of results to return
+        limit: Maximum number of results to return (default: from config or 10)
     
     Returns:
         JSON string containing discovered movies
     """
+    # Load plugin config and merge with kwargs
+    config = get_plugin_config('movies')
+    params_merged = merge_config_with_kwargs(config, kwargs)
+    config_vars = config.get('variables', {})
+    
     # Calculate date range
     current_year = datetime.datetime.now().year
-    start_year = kwargs.get('start_year')
+    start_year = params_merged.get('start_year')
     
     if start_year is None:
-        years_back = kwargs.get('years_back')
+        years_back = params_merged.get('years_back')
         if years_back is not None:
             start_year = current_year - years_back
         else:
@@ -40,15 +48,15 @@ def discover_movies(**kwargs) -> str:
     
     start_date = f"{start_year}-01-01"
     
-    # Build parameters (using snake_case with _gte/_lte - auto-converted by client)
+    # Build parameters with config defaults
     params = {
-        'with_genres': kwargs.get('genres'),
+        'with_genres': params_merged.get('genres'),
         'release_date_gte': start_date,
-        'vote_average_gte': kwargs.get('min_rating'),
-        'vote_count_gte': kwargs.get('min_votes', 100),
-        'with_runtime_gte': kwargs.get('min_runtime', 60),
-        'with_runtime_lte': kwargs.get('max_runtime'),
-        'sort_by': kwargs.get('sort_by', 'popularity.desc'),
+        'vote_average_gte': params_merged.get('min_rating') or config_vars.get('min_rating', 7.0),
+        'vote_count_gte': params_merged.get('min_votes') or config_vars.get('min_votes', 100),
+        'with_runtime_gte': params_merged.get('min_runtime', 60),
+        'with_runtime_lte': params_merged.get('max_runtime'),
+        'sort_by': params_merged.get('sort_by', 'popularity.desc'),
     }
     
     # Remove None values
@@ -62,8 +70,8 @@ def discover_movies(**kwargs) -> str:
         
         movies = response_data.get('results', [])
         
-        # Apply limit if specified
-        limit = kwargs.get('limit')
+        # Apply limit from config or kwargs
+        limit = params_merged.get('limit') or config_vars.get('limit', 10)
         if limit:
             movies = movies[:int(limit)]
         

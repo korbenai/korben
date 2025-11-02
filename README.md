@@ -28,10 +28,9 @@ Out of the box capabilities:
 - **Trending Movies Workflow** - Discover and email trending movies:
   - `discover_movies` - Query TMDB for movies matching criteria
   - `trending_movies` - Find trending movies by genre and send via email
-  - `popular_movies` - Get popular movies from current/recent years
 - **Books Discovery** - Find and recommend books:
   - `search_books` - Search ISBNdb for books by query, subject, or author
-  - `trending_ai_books` - Get trending AI books and email recommendations
+  - `get_book_details` - Get detailed information about a specific book by ISBN
 - **GitHub Integration** - Create and share gists:
   - `create_gist_from_file` - Create a GitHub gist from a single file
   - `create_gist_from_directory` - Create a gist from all files in a directory
@@ -147,7 +146,7 @@ cp config/podcasts.yml.example config/podcasts.yml
 vim config/podcasts.yml
 ```
 
-Run: `pdm run python3 ./korben.py --flow podcasts`
+Run: `pdm run python3 ./korben.py --flow process_podcasts`
 
 ### Prefect Cloud (Optional)
 
@@ -207,10 +206,8 @@ Available tasks:
 
 Available flows:
   - linear_status_report
-  - mallory_stories
-  - podcast
-  - popular_movies
-  - trending_ai_books
+  - mallory_trending_stories
+  - process_podcasts
   - trending_movies
 ```
 
@@ -218,11 +215,11 @@ Available flows:
 
 ```bash
 # Run complete podcasts workflow (ControlFlow flow)
-pdm run python3 ./korben.py --flow podcast
+pdm run python3 ./korben.py --flow process_podcasts
 
 # Run Mallory stories workflow (fetch and email security news)
-pdm run python3 ./korben.py --flow mallory_stories
-pdm run python3 ./korben.py --flow mallory_stories --recipient custom@email.com --subject "Today's Security News"
+pdm run python3 ./korben.py --flow mallory_trending_stories
+pdm run python3 ./korben.py --flow mallory_trending_stories --recipient custom@email.com --subject "Today's Security News"
 
 # Or run individual podcast tasks
 pdm run python3 ./korben.py --task download_podcasts
@@ -244,13 +241,6 @@ pdm run python3 ./korben.py --task discover_movies --genres "28,878" --min_ratin
 # Get trending movies and send via email
 pdm run python3 ./korben.py --flow trending_movies
 pdm run python3 ./korben.py --flow trending_movies --genres "sci-fi,action,thriller"
-
-# Get popular recent movies (all genres)
-pdm run python3 ./korben.py --flow popular_movies
-
-# Get trending AI books and send via email
-pdm run python3 ./korben.py --flow trending_ai_books
-pdm run python3 ./korben.py --flow trending_ai_books --query "machine learning" --limit 10
 
 # Create GitHub gists for sharing code
 pdm run python3 ./korben.py --task create_gist_from_file --file_path /path/to/script.py --description "My script"
@@ -281,7 +271,7 @@ pdm run python3 ./korben.py --task entropy
 
 ### Podcasts Flow
 
-**Complete workflow** - `--flow podcast`:  
+**Complete workflow** - `--flow process_podcasts`:  
 ControlFlow flow demonstrating task composition. Orchestrates podcast tasks and generic tasks.
 
 **Flow steps:**
@@ -301,7 +291,7 @@ This demonstrates **composability**: generic tasks are composed to build a compl
 
 ### Mallory Stories Flow
 
-**Complete workflow** - `--flow mallory_stories`:  
+**Complete workflow** - `--flow mallory_trending_stories`:  
 Fetches cybersecurity stories from Mallory API, converts to HTML, and emails them.
 
 **Flow steps:**
@@ -317,10 +307,10 @@ Fetches cybersecurity stories from Mallory API, converts to HTML, and emails the
 **Usage:**
 ```bash
 # Run complete flow with default recipient (PERSONAL_EMAIL)
-pdm run python3 ./korben.py --flow mallory_stories
+pdm run python3 ./korben.py --flow mallory_trending_stories
 
 # Specify recipient and subject
-pdm run python3 ./korben.py --flow mallory_stories \
+pdm run python3 ./korben.py --flow mallory_trending_stories \
   --recipient custom@email.com \
   --subject "Today's Security Stories"
 
@@ -366,10 +356,6 @@ pdm run python3 ./korben.py --flow trending_movies \
   --years_back 2 \
   --limit 5
 
-# Popular movies from current/recent years (all genres)
-pdm run python3 ./korben.py --flow popular_movies
-pdm run python3 ./korben.py --flow popular_movies --min_rating 8.0 --limit 15 --years_back 2
-
 # Just discover movies (no email)
 pdm run python3 ./korben.py --task discover_movies \
   --genres "878,28" \
@@ -387,47 +373,37 @@ pdm run python3 ./korben.py --task discover_movies \
 
 **Output:** Formatted email with movie title, year, rating, vote count, popularity score, and description.
 
-### Books Discovery Flow
+### Books Discovery Tasks
 
-**Complete workflow** - `--flow trending_ai_books`:  
-Searches ISBNdb for books about AI and related topics, formats them beautifully, and emails the recommendations.
+**Search and discover books** using ISBNdb API:
 
-**Flow steps:**
-1. `search_books` - Queries ISBNdb API with search criteria
-2. Formats books into beautiful HTML email with title, author, publisher, ISBN, and synopsis
-3. `send_email` - Sends formatted email
+The books plugin provides tasks for searching books but the email flow is currently disabled. You can use the tasks directly:
 
 **Environment Variables:**
 - `ISBNDB_API_KEY` - ISBNdb API key (required) - Get from https://isbndb.com/isbn-database
-- `PERSONAL_EMAIL` - Your email (default recipient)
-- `POSTMARK_API_KEY` - Postmark API key (required)
 
 **Usage:**
 ```bash
-# Default: search for "artificial intelligence" books
-pdm run python3 ./korben.py --flow trending_ai_books
-
-# Custom search query
-pdm run python3 ./korben.py --flow trending_ai_books --query "machine learning"
+# Search books by query
+pdm run python3 ./korben.py --task search_books --query "artificial intelligence" --limit 20
 
 # Search by subject
-pdm run python3 ./korben.py --flow trending_ai_books --subject "Computer Science" --limit 10
+pdm run python3 ./korben.py --task search_books --subject "Computer Science" --limit 10
 
-# Search books directly (no email)
-pdm run python3 ./korben.py --task search_books --query "deep learning" --limit 20
+# Search by author
+pdm run python3 ./korben.py --task search_books --author "Ian Goodfellow" --limit 10
 
 # Get book details by ISBN
 pdm run python3 ./korben.py --task get_book_details --isbn "9780262046244"
 ```
 
 **Parameters:**
-- `query` - Search query (default: "artificial intelligence")
-- `subject` - Search by subject category instead
+- `query` - Search query text
+- `subject` - Search by subject category
 - `author` - Search by author name
-- `limit` - Maximum books to include (default: 15)
-- `recipient` - Email recipient (default: PERSONAL_EMAIL)
+- `limit` - Maximum books to return (default: 50)
 
-**Output:** Formatted email with book title, author(s), publisher, publication date, ISBN, and synopsis.
+**Output:** JSON with book details including title, authors, publisher, ISBN, and synopsis.
 
 ### GitHub Plugin
 
@@ -1215,7 +1191,7 @@ See `pyproject.toml` for complete list.
 
 ```bash
 # Run workflows locally
-pdm run python3 ./korben.py --flow podcasts
+pdm run python3 ./korben.py --flow process_podcasts
 pdm run python3 ./korben.py --task download_podcasts
 ```
 

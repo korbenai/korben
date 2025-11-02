@@ -4,7 +4,7 @@ import os
 import logging
 import requests
 import controlflow as cf
-from src.lib.core_utils import get_agent_name
+from src.lib.core_utils import get_agent_name, get_plugin_config, merge_config_with_kwargs
 
 # Plugin dependencies - required for this plugin to work
 __dependencies__ = ['email', 'slack']
@@ -13,7 +13,22 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_mallory_stories(**kwargs):
-    """Run mallory_stories task to fetch latest stories from Mallory API and summarize them."""
+    """
+    Fetch latest stories from Mallory API and summarize them.
+    
+    Config file: src/plugins/mallory/config.yml (optional)
+    
+    Args:
+        limit: Number of stories to fetch (default: from config or 20)
+    
+    Returns:
+        str: Formatted markdown with story summaries
+    """
+    # Load plugin config and merge with kwargs
+    config = get_plugin_config('mallory')
+    params = merge_config_with_kwargs(config, kwargs)
+    config_vars = config.get('variables', {})
+    
     # Get API key from environment
     api_key = os.environ.get("MALLORY_API_KEY")
     if not api_key:
@@ -23,8 +38,8 @@ def fetch_mallory_stories(**kwargs):
     url = "https://api.mallory.ai/stories"
     headers = {"Authorization": f"Bearer {api_key}"}
     
-    # Number of stories to fetch
-    limit = kwargs.get('limit', 20)
+    # Number of stories to fetch from config or kwargs
+    limit = params.get('limit') or config_vars.get('limit', 20)
     
     # Fetch stories from Mallory API
     response = requests.get(url, headers=headers, params={"limit": limit})
