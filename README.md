@@ -2,11 +2,11 @@
 
 <img alt="Korben" width="20%" style="border:none;box-shadow:none;" src="https://github.com/user-attachments/assets/cee1e900-f23b-47eb-83c5-6cae2e811008"  /> 
 
-Hackable personal automation framework, bing badda boom.
+Hackable personal automation framework built on ControlFlow and Prefect - and pluggable for your personal enjoyment, bing badda boom.
 
 ## Plugin Architecture
 
-Korben uses an **auto-discovery plugin system** - plugins are automatically registered at startup!
+Korben uses an **auto-discovery plugin system** - plugins are automatically registered at startup.
 
 ```
 src/core/plugins/
@@ -51,7 +51,14 @@ Everything needed for the plugin lives in one folder!
 
 ## Features
 
-- **Generic Tasks** - Reusable building blocks:
+* Intelligence built-in - easily spin up intelligent agents 
+* Composable - build tasks and use them in more complex flows
+* Extensible - Easy to add new tasks and flows in plugins
+* Batteries includes - many built in plugins for hacker types
+
+Out of the box capabilities: 
+
+- **Generic Utilities** - Reusable building blocks:
   - `extract_wisdom` - Extract insights from text (returns markdown)
   - `markdown_to_html` - Convert markdown to HTML
   - `send_email` - Send email via Postmark
@@ -70,10 +77,6 @@ Everything needed for the plugin lives in one folder!
 - **Books Discovery** - Find and recommend books:
   - `search_books` - Search ISBNdb for books by query, subject, or author
   - `trending_ai_books` - Get trending AI books and email recommendations
-- **Entropy** - Example task demonstrating multi-agent AI collaboration
-- **CSV State Tracking** - Resume interrupted workflows without re-processing
-- **Composable Architecture** - Generic tasks composed via ControlFlow flows
-- **Extensible** - Easy to add new tasks and flows using the registry pattern
 
 ## Quick Start
 
@@ -490,8 +493,8 @@ variables:
 
 **Podcasts Plugin:**
 ```bash
-cp config/podcasts.yml.example config/podcasts.yml
-vim config/podcasts.yml
+cp src/core/plugins/podcasts/config.yml.example src/core/plugins/podcasts/config.yml
+vim src/core/plugins/podcasts/config.yml
 ```
 
 ```yaml
@@ -499,8 +502,6 @@ days_back: 7
 podcasts:
   my_podcast: "https://example.com/feed.xml"
 ```
-
-**Note:** Podcasts config remains in `config/` directory since it's used for global podcast management.
 
 ### Data Storage
 
@@ -533,9 +534,9 @@ mkdir -p src/core/plugins/weather
 ```
 
 **2. Create `tasks.py`:**
-```python
+   ```python
 """Weather plugin tasks."""
-
+   
 def get_forecast(**kwargs):
     """Get weather forecast for a location."""
     location = kwargs.get('location', 'San Francisco')
@@ -547,7 +548,7 @@ def _api_call(location):
 ```
 
 **3. Create `flows.py` (optional):**
-```python
+   ```python
 """Weather plugin flows."""
 import controlflow as cf
 from src.core.plugins.weather import tasks as weather_tasks
@@ -572,7 +573,7 @@ Get weather forecasts and send via email.
 ```
 
 **5. Done! Auto-registered instantly:**
-```bash
+   ```bash
 pdm run python3 ./korben.py --list
 # Shows: get_forecast, daily_weather
 

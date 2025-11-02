@@ -85,16 +85,15 @@ def update_podcast_status(podcast_file, transcribed_file=None, summarized=None, 
 
 
 def load_podcasts_config():
-    """Load podcasts configuration from YAML file."""
-    # Go up from src/lib/ to repo root
-    repo_root = os.path.join(os.path.dirname(__file__), '..', '..')
-    config_path = os.path.join(repo_root, 'config', 'podcasts.yml')
+    """Load podcasts configuration from YAML file in plugin directory."""
+    # Config now lives in the plugin directory
+    config_path = os.path.join(os.path.dirname(__file__), 'config.yml')
     
     if not os.path.exists(config_path):
         raise FileNotFoundError(
             f"No config file found at: {config_path}\n"
-            f"Please copy config/podcasts.yml.example to config/podcasts.yml and customize it:\n"
-            f"  cp config/podcasts.yml.example config/podcasts.yml"
+            f"Please copy config.yml.example to config.yml in the podcasts plugin:\n"
+            f"  cp src/core/plugins/podcasts/config.yml.example src/core/plugins/podcasts/config.yml"
         )
     
     with open(config_path, 'r') as file:

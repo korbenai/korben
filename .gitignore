@@ -223,3 +223,5 @@ tmp/
 # Prefect
 .prefect/
 .prefectignore
+src/core/plugins/config.yml
+src/core/plugins/podcasts/config.yml

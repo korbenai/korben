@@ -24,9 +24,29 @@ podcasts/
 
 ## Requirements
 
-- `config/podcasts.yml` - Podcast feeds configuration
+### Configuration File
+
+**Location:** `src/core/plugins/podcasts/config.yml`
+
+```bash
+# Copy example to create your config
+cp src/core/plugins/podcasts/config.yml.example src/core/plugins/podcasts/config.yml
+vim src/core/plugins/podcasts/config.yml
+```
+
+```yaml
+days_back: 7
+podcasts:
+  my_podcast: "https://example.com/feed.xml"
+```
+
+### Environment Variables
+
 - `PERSONAL_EMAIL` - Email recipient
 - `POSTMARK_API_KEY` - For email delivery
+
+### Dependencies
+
 - OpenAI Whisper - For transcription
 
 ## Usage
