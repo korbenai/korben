@@ -91,7 +91,7 @@ def trending_ai_books_workflow(**kwargs):
         query: Search query (default: from config or 'artificial intelligence')
         subject: Search by subject instead
         limit: Maximum number of books (default: from config or 15)
-        recipient: Email recipient (default: PERSONAL_EMAIL env var)
+        recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
     
     Returns:
         Status message
@@ -105,12 +105,10 @@ def trending_ai_books_workflow(**kwargs):
     query = params.get('query') or config_vars.get('query', 'artificial intelligence')
     subject_filter = params.get('subject') or config_vars.get('subject')
     limit = params.get('limit') or config_vars.get('limit', 15)
-    recipient = params.get('recipient') or os.getenv('PERSONAL_EMAIL')
     
-    if not recipient:
-        error_msg = "No recipient specified. Provide 'recipient' or set PERSONAL_EMAIL environment variable."
-        logger.error(error_msg)
-        return error_msg
+    # Only override recipient if explicitly set in books config/kwargs
+    # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
+    recipient = params.get('recipient') or config_vars.get('recipient')
     
     logger.info(f"Step 1: Searching for AI books...")
     
@@ -148,13 +146,15 @@ def trending_ai_books_workflow(**kwargs):
         email_content = _format_books_email(books, query or subject_filter)
         email_subject = f"📚 Trending AI Books: {query or subject_filter}"
         
-        email_result = email_tasks.send_email(
-            recipient=recipient,
-            subject=email_subject,
-            content=email_content
-        )
+        # Send email - only pass recipient if explicitly set in books config
+        # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
+        email_kwargs = {'subject': email_subject, 'content': email_content}
+        if recipient:
+            email_kwargs['recipient'] = recipient
         
-        logger.info(f"Successfully sent {len(books)} books to {recipient}")
+        email_result = email_tasks.send_email(**email_kwargs)
+        
+        logger.info(f"Successfully sent {len(books)} books via email")
         
         return f"Found {len(books)} books\n{email_result}"
         

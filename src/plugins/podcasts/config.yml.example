@@ -4,6 +4,11 @@
 # Number of days back to fetch podcasts
 days_back: 7
 
+# Email recipient override (optional)
+# If not set here, falls back to email plugin config, then PERSONAL_EMAIL env var
+# variables:
+#   recipient: "you@example.com"
+
 # Podcast feeds
 podcasts:
   # Tech & AI

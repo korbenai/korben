@@ -115,7 +115,7 @@ def trending_movies_workflow(**kwargs):
         years_back: How many years back to search (default: from config or current year only)
         start_year: Start year for filtering (overrides years_back if set)
         limit: Maximum number of movies (default: from config or 10)
-        recipient: Email recipient (default: PERSONAL_EMAIL env var)
+        recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
     
     Returns:
         Status message
@@ -169,7 +169,10 @@ def trending_movies_workflow(**kwargs):
             start_year = current_year
     
     limit = params.get('limit', 10)
-    recipient = params.get('recipient') or os.getenv('PERSONAL_EMAIL')
+    
+    # Only override recipient if explicitly set in movies config/kwargs
+    # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
+    recipient = params.get('recipient') or config_vars.get('recipient')
     
     logger.info(f"Step 1: Discovering movies for genres: {', '.join(valid_genres)} from {start_year}+")
     
@@ -205,25 +208,21 @@ def trending_movies_workflow(**kwargs):
         # Step 2: Format and send email
         logger.info("Step 2: Formatting and sending email...")
         
-        if not recipient:
-            error_msg = "No recipient specified. Provide 'recipient' or set PERSONAL_EMAIL environment variable."
-            logger.error(error_msg)
-            return error_msg
-        
         # Format email content
         email_content = _format_movie_email(movies_sorted, valid_genres)
         subject = f"🎬 Trending {', '.join(valid_genres)} Movies"
         
-        # Send email
-        email_result = email_tasks.send_email(
-            recipient=recipient,
-            subject=subject,
-            content=email_content
-        )
+        # Send email - only pass recipient if explicitly set in movies config
+        # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
+        email_kwargs = {'subject': subject, 'content': email_content}
+        if recipient:
+            email_kwargs['recipient'] = recipient
+        
+        email_result = email_tasks.send_email(**email_kwargs)
         
         results.append(email_result)
         
-        logger.info(f"Successfully sent {len(movies_sorted)} movies to {recipient}")
+        logger.info(f"Successfully sent {len(movies_sorted)} movies via email")
         
         return "\n".join(results)
         
@@ -247,17 +246,25 @@ def popular_movies_workflow(**kwargs):
         min_votes: Minimum vote count (default: 100)
         start_year: Filter movies from this year onwards (default: current year)
         years_back: How many years back to include (alternative to start_year)
-        recipient: Email recipient (default: PERSONAL_EMAIL env var)
+        recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
     
     Returns:
         Status message
     """
     import datetime
     
-    limit = kwargs.get('limit', 10)
-    min_rating = kwargs.get('min_rating', 7.0)
-    min_votes = kwargs.get('min_votes', 100)
-    recipient = kwargs.get('recipient') or os.getenv('PERSONAL_EMAIL')
+    # Load plugin config and merge with kwargs (kwargs take precedence)
+    config = get_plugin_config('movies')
+    params = merge_config_with_kwargs(config, kwargs)
+    config_vars = config.get('variables', {})
+    
+    limit = params.get('limit', 10)
+    min_rating = params.get('min_rating', 7.0)
+    min_votes = params.get('min_votes', 100)
+    
+    # Only override recipient if explicitly set in movies config/kwargs
+    # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
+    recipient = params.get('recipient') or config_vars.get('recipient')
     
     # Calculate start year
     current_year = datetime.datetime.now().year
@@ -270,11 +277,6 @@ def popular_movies_workflow(**kwargs):
         else:
             # Default to current year only
             start_year = current_year
-    
-    if not recipient:
-        error_msg = "No recipient specified. Provide 'recipient' or set PERSONAL_EMAIL environment variable."
-        logger.error(error_msg)
-        return error_msg
     
     start_date = f"{start_year}-01-01"
     logger.info(f"Fetching popular movies from {start_date} onwards...")
@@ -307,13 +309,15 @@ def popular_movies_workflow(**kwargs):
         email_content = _format_movie_email(movies_sorted, ['Popular'])
         subject = f"🎬 Popular Movies from {start_year}+"
         
-        email_result = email_tasks.send_email(
-            recipient=recipient,
-            subject=subject,
-            content=email_content
-        )
+        # Send email - only pass recipient if explicitly set in movies config
+        # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
+        email_kwargs = {'subject': subject, 'content': email_content}
+        if recipient:
+            email_kwargs['recipient'] = recipient
         
-        logger.info(f"Successfully sent {len(movies_sorted)} popular movies to {recipient}")
+        email_result = email_tasks.send_email(**email_kwargs)
+        
+        logger.info(f"Successfully sent {len(movies_sorted)} popular movies via email")
         
         return f"Found {len(movies_sorted)} popular movies\n{email_result}"
         

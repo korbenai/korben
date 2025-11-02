@@ -12,11 +12,17 @@ __dependencies__ = ['email', 'utilities']
 
 
 @cf.flow
-def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipient_email):
+def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipient_email=None):
     """
     Process a single transcript: read → extract wisdom → write → convert to HTML → email.
     
     Composes generic tasks to process one podcast transcript.
+    
+    Args:
+        transcript_path: Path to the transcript file
+        podcast_file: Path to the podcast file  
+        wisdom_dir: Directory to save wisdom output
+        recipient_email: Optional recipient email (if not set, email plugin will use its config)
     """
     # Step 1: Read transcript file
     text = utility_tasks.read_file(file_path=transcript_path)
@@ -38,7 +44,13 @@ def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipi
     if len(file_name) > 80:
         subject += "..."
     
-    email_tasks.send_email(recipient=recipient_email, subject=subject, content=wisdom_html)
+    # Send email - only pass recipient if explicitly set in podcasts config
+    # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
+    email_kwargs = {'subject': subject, 'content': wisdom_html}
+    if recipient_email:
+        email_kwargs['recipient'] = recipient_email
+    
+    email_tasks.send_email(**email_kwargs)
     
     # Update CSV tracking
     update_podcast_status(podcast_file, summarized=True, emailed=True)
@@ -57,6 +69,9 @@ def podcast_workflow(**kwargs):
     3. For each transcript: read → extract wisdom → write → email (using generic tasks)
     
     All operations share context and history within this flow.
+    
+    Args:
+        recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
     """
     import logging
     logger = logging.getLogger(__name__)
@@ -76,16 +91,17 @@ def podcast_workflow(**kwargs):
     # Step 3: Extract wisdom and email for each transcript
     logger.info("Step 3: Extracting wisdom and sending emails...")
     
+    # Get recipient from podcasts config if set
+    # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
+    from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
+    podcast_config = get_plugin_config('podcasts')
+    podcast_params = merge_config_with_kwargs(podcast_config, kwargs)
+    podcast_vars = podcast_config.get('variables', {})
+    recipient_email = podcast_params.get('recipient') or podcast_vars.get('recipient')
+    
     data_dir = get_data_dir()
     transcript_dir = os.path.join(data_dir, 'podcasts', 'transcripts')
     wisdom_dir = os.path.join(data_dir, 'podcasts', 'wisdom')
-    recipient_email = os.getenv('PERSONAL_EMAIL')
-    
-    if not recipient_email:
-        result = "WARNING: PERSONAL_EMAIL environment variable not set. Skipping wisdom processing."
-        logger.warning("PERSONAL_EMAIL environment variable not set. Skipping wisdom processing.")
-        results.append(result)
-        return "\n".join(results)
     
     if not os.path.isdir(transcript_dir):
         result = f"Transcripts directory {transcript_dir} does not exist. Skipping wisdom processing."

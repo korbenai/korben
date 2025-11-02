@@ -4,6 +4,35 @@
 
 Hackable personal automation framework built on ControlFlow and Prefect - and pluggable for your personal enjoyment, bing badda boom.
 
+## Features
+
+* Intelligence built-in - easily spin up intelligent agents 
+* Composable - build tasks and use them in more complex flows
+* Extensible - Easy to add new tasks and flows in plugins
+* Batteries includes - many built in plugins for hacker types
+
+Out of the box capabilities: 
+
+- **Generic Utilities** - Reusable building blocks:
+  - `extract_wisdom` - Extract insights from text (returns markdown)
+  - `markdown_to_html` - Convert markdown to HTML
+  - `send_email` - Send email via Postmark
+  - `read_file` / `write_file` - File I/O
+- **Podcast Workflow** - ControlFlow flow demonstrating task composition:
+  - `download_podcasts` - Download from RSS/Apple Podcasts feeds
+  - `transcribe_podcasts` - Convert audio to text using Whisper
+  - Flow orchestrates generic tasks: `read_file` → `extract_wisdom` → `write_file` → `markdown_to_html` → `send_email`
+- **Mallory Stories Workflow** - Fetch and email cybersecurity stories:
+  - `fetch_mallory_stories` - Fetch and summarize latest stories from Mallory API
+  - Flow orchestrates: `fetch_mallory_stories` → `markdown_to_html` → `send_email`
+- **Trending Movies Workflow** - Discover and email trending movies:
+  - `discover_movies` - Query TMDB for movies matching criteria
+  - `trending_movies` - Find trending movies by genre and send via email
+  - `popular_movies` - Get popular movies from current/recent years
+- **Books Discovery** - Find and recommend books:
+  - `search_books` - Search ISBNdb for books by query, subject, or author
+  - `trending_ai_books` - Get trending AI books and email recommendations
+
 ## Plugin Architecture
 
 Korben uses an **auto-discovery plugin system** - plugins are automatically registered at startup.
@@ -57,34 +86,6 @@ Everything needed for the plugin lives in one folder!
 
 **Example:** Just create a plugin and it works immediately - no registry edits!
 
-## Features
-
-* Intelligence built-in - easily spin up intelligent agents 
-* Composable - build tasks and use them in more complex flows
-* Extensible - Easy to add new tasks and flows in plugins
-* Batteries includes - many built in plugins for hacker types
-
-Out of the box capabilities: 
-
-- **Generic Utilities** - Reusable building blocks:
-  - `extract_wisdom` - Extract insights from text (returns markdown)
-  - `markdown_to_html` - Convert markdown to HTML
-  - `send_email` - Send email via Postmark
-  - `read_file` / `write_file` - File I/O
-- **Podcast Workflow** - ControlFlow flow demonstrating task composition:
-  - `download_podcasts` - Download from RSS/Apple Podcasts feeds
-  - `transcribe_podcasts` - Convert audio to text using Whisper
-  - Flow orchestrates generic tasks: `read_file` → `extract_wisdom` → `write_file` → `markdown_to_html` → `send_email`
-- **Mallory Stories Workflow** - Fetch and email cybersecurity stories:
-  - `fetch_mallory_stories` - Fetch and summarize latest stories from Mallory API
-  - Flow orchestrates: `fetch_mallory_stories` → `markdown_to_html` → `send_email`
-- **Trending Movies Workflow** - Discover and email trending movies:
-  - `discover_movies` - Query TMDB for movies matching criteria
-  - `trending_movies` - Find trending movies by genre and send via email
-  - `popular_movies` - Get popular movies from current/recent years
-- **Books Discovery** - Find and recommend books:
-  - `search_books` - Search ISBNdb for books by query, subject, or author
-  - `trending_ai_books` - Get trending AI books and email recommendations
 
 ## Quick Start
 
@@ -800,16 +801,16 @@ To add a new plugin:
    ```
 
 **Best Practices:**
-- 🎯 **Self-Contained** - Each plugin is independent
-- 📝 **Clear Naming** - Function names become CLI commands
-- 🔒 **Private Helpers** - Prefix with `_` to hide from CLI
-- 📚 **Document** - Include README.md for each plugin
-- 🧪 **Testable** - Plugins are isolated and easy to test
+- **Self-Contained** - Each plugin is independent
+- **Clear Naming** - Function names become CLI commands
+- **Private Helpers** - Prefix with `_` to hide from CLI
+- **Document** - Include README.md for each plugin
+- **Testable** - Plugins are isolated and easy to test
 
 **Benefits:**
-- 🚀 **Fast Development** - Create folder, write code, done
-- 🔌 **True Pluggability** - No core modifications needed
-- 🔍 **Auto-Discovery** - `--list` shows everything automatically
+- **Fast Development** - Create folder, write code, done
+- **True Pluggability** - No core modifications needed
+- **Auto-Discovery** - `--list` shows everything automatically
 
 ## Dependencies
 

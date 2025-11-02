@@ -14,7 +14,8 @@ variables:
   # Filtering (optional)
   min_year: 2024                         # Only books published after this year
   
-  # Email settings (optional, falls back to PERSONAL_EMAIL env var)
+  # Email recipient override (optional)
+  # If not set here, falls back to email plugin config, then PERSONAL_EMAIL env var
   # recipient: "you@example.com"
 
 # Predefined search queries for quick access
