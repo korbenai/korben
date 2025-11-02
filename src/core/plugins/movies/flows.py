@@ -5,9 +5,12 @@ import json
 import logging
 import controlflow as cf
 from src.core.plugins.movies import tasks as movie_tasks
-from src.core.plugins.utilities import tasks as utility_tasks
+from src.core.plugins.email import tasks as email_tasks
 from src.core.plugins.movies.lib import TMDBService
 from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
+
+# Plugin dependencies
+__dependencies__ = ['email']
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +215,7 @@ def trending_movies_workflow(**kwargs):
         subject = f"🎬 Trending {', '.join(valid_genres)} Movies"
         
         # Send email
-        email_result = utility_tasks.send_email(
+        email_result = email_tasks.send_email(
             recipient=recipient,
             subject=subject,
             content=email_content
@@ -304,7 +307,7 @@ def popular_movies_workflow(**kwargs):
         email_content = _format_movie_email(movies_sorted, ['Popular'])
         subject = f"🎬 Popular Movies from {start_year}+"
         
-        email_result = utility_tasks.send_email(
+        email_result = email_tasks.send_email(
             recipient=recipient,
             subject=subject,
             content=email_content
@@ -318,4 +321,3 @@ def popular_movies_workflow(**kwargs):
         error_msg = f"Workflow failed: {e}"
         logger.error(error_msg)
         return error_msg
-

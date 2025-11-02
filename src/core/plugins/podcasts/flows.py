@@ -4,7 +4,11 @@ import os
 import controlflow as cf
 from src.core.plugins.podcasts import tasks as podcast_tasks
 from src.core.plugins.utilities import tasks as utility_tasks
+from src.core.plugins.email import tasks as email_tasks
 from src.core.plugins.podcasts.lib import get_data_dir, get_tracking_csv, get_podcast_status, update_podcast_status
+
+# Plugin dependencies
+__dependencies__ = ['email', 'utilities']
 
 
 @cf.flow
@@ -34,7 +38,7 @@ def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipi
     if len(file_name) > 80:
         subject += "..."
     
-    utility_tasks.send_email(recipient=recipient_email, subject=subject, content=wisdom_html)
+    email_tasks.send_email(recipient=recipient_email, subject=subject, content=wisdom_html)
     
     # Update CSV tracking
     update_podcast_status(podcast_file, summarized=True, emailed=True)

@@ -14,7 +14,9 @@ src/core/plugins/
 ├── books/        # ISBNdb book search and recommendations
 ├── podcasts/     # Podcast download, transcribe, wisdom extraction
 ├── mallory/      # Cybersecurity news from Mallory API
-└── utilities/    # Generic reusable tasks (email, files, markdown, AI)
+├── email/        # Email delivery via Postmark
+├── slack/        # Slack notifications via webhooks
+└── utilities/    # Generic file I/O and text processing
 ```
 
 ### Plugin Structure
@@ -46,6 +48,12 @@ Everything needed for the plugin lives in one folder!
 - ✅ All public functions in `flows.py` → registered as flows
 - ✅ Flow names ending with `_workflow` → suffix auto-removed
 - ❌ Functions starting with `_` → private (not registered)
+
+**Dependencies:**
+- Plugins can declare dependencies via `__dependencies__ = ['plugin1', 'plugin2']`
+- System validates dependencies exist before registration
+- Plugins with missing dependencies are disabled with clear warnings
+- Prevents runtime errors from missing integrations
 
 **Example:** Just create a plugin and it works immediately - no registry edits!
 
@@ -654,7 +662,9 @@ plugins/
 ├── books/           # Book search (ISBNdb)
 ├── podcasts/        # Podcast processing
 ├── mallory/         # Security news
-└── utilities/       # Generic reusable tasks
+├── email/           # Email delivery (Postmark)
+├── slack/           # Slack notifications
+└── utilities/       # Generic file & text processing
 ```
 
 Each plugin is completely self-contained:

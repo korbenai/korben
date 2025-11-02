@@ -5,45 +5,9 @@ import sys
 import logging
 import markdown
 import controlflow as cf
-from src.core.plugins.utilities.lib import send_email as send_email_lib
-from src.lib.core_utils import get_tmp_dir, get_agent_name, get_core_config
+from src.lib.core_utils import get_tmp_dir, get_agent_name
 
 logger = logging.getLogger(__name__)
-
-
-# Email Tasks
-
-def send_email(**kwargs):
-    """
-    Send an email using Postmark API.
-    
-    Args:
-        recipient: Recipient email address
-        subject: Email subject line
-        content: Email content/body
-    
-    Returns:
-        str: Success message
-    """
-    recipient = kwargs.get('recipient') or os.getenv('PERSONAL_EMAIL')
-    subject = kwargs.get('subject')
-    content = kwargs.get('content')
-    
-    if not recipient:
-        return "ERROR: No recipient specified. Provide --recipient or set PERSONAL_EMAIL environment variable."
-    
-    if not subject:
-        return "ERROR: No subject specified. Provide --subject."
-    
-    if not content:
-        return "ERROR: No content specified. Provide --content."
-    
-    # Send email
-    send_email_lib(recipient, subject, content)
-    
-    result = f"Email sent to {recipient}: {subject}"
-    logger.info(result)
-    return result
 
 
 # File I/O Tasks
@@ -231,43 +195,6 @@ Take a step back and think step-by-step about how to achieve the best possible r
     )
     
     return str(wisdom)
-
-
-# Slack Integration
-
-def send_slack_hook(**kwargs):
-    """
-    Send message to Slack via webhook.
-    
-    Args:
-        message: Message text to send
-    
-    Returns:
-        str: Success message
-    """
-    import requests
-    import json
-    
-    message = kwargs.get('message')
-    
-    if not message:
-        return "ERROR: No message specified. Provide --message."
-    
-    config = get_core_config()
-    webhook_url = os.getenv('SLACK_WEBHOOK_URL') or config.get('slack_webhook_url')
-    
-    if not webhook_url:
-        return "ERROR: SLACK_WEBHOOK_URL not set in environment or core config."
-    
-    payload = {'text': message}
-    response = requests.post(webhook_url, json=payload)
-    
-    if response.status_code == 200:
-        result = f"Slack message sent: {message[:50]}..."
-        logger.info(result)
-        return result
-    else:
-        return f"ERROR: Failed to send Slack message: {response.status_code}"
 
 
 # Example/Demo Tasks

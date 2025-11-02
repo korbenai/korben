@@ -1,0 +1,22 @@
+# Slack Plugin Configuration
+# Copy this file to src/core/plugins/slack/config.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by send_slack_hook task
+variables:
+  # Default webhook name
+  hook_name: "default"
+  
+  # Webhook URLs by name (just the URL string)
+  webhooks:
+    default: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    # security: "https://hooks.slack.com/services/YOUR/SECURITY/WEBHOOK"
+    # alerts: "https://hooks.slack.com/services/YOUR/ALERTS/WEBHOOK"
+
+# Environment variables (alternative to config):
+# - SLACK_WEBHOOK_URL: Default webhook URL (fallback if not in config)
+
+# Usage:
+# pdm run python3 ./korben.py --task send_slack_hook --message "Hello Slack!"
+# pdm run python3 ./korben.py --task send_slack_hook --message "Alert!" --hook_name "security"
+

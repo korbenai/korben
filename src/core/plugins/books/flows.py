@@ -5,8 +5,11 @@ import json
 import logging
 import controlflow as cf
 from src.core.plugins.books import tasks as book_tasks
-from src.core.plugins.utilities import tasks as utility_tasks
+from src.core.plugins.email import tasks as email_tasks
 from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
+
+# Plugin dependencies
+__dependencies__ = ['email']
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +148,7 @@ def trending_ai_books_workflow(**kwargs):
         email_content = _format_books_email(books, query or subject_filter)
         email_subject = f"📚 Trending AI Books: {query or subject_filter}"
         
-        email_result = utility_tasks.send_email(
+        email_result = email_tasks.send_email(
             recipient=recipient,
             subject=email_subject,
             content=email_content
@@ -159,4 +162,3 @@ def trending_ai_books_workflow(**kwargs):
         error_msg = f"Workflow failed: {e}"
         logger.error(error_msg)
         return error_msg
-

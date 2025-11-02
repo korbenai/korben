@@ -1,0 +1,20 @@
+# Email Plugin Configuration
+# Copy this file to src/core/plugins/email/config.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by send_email task
+variables:
+  # Default recipient (optional, falls back to PERSONAL_EMAIL env var)
+  # recipient: "you@example.com"
+  
+  # Default sender (uses PERSONAL_EMAIL env var if not specified)
+  # from_email: "sender@example.com"
+
+# Environment variables required:
+# - POSTMARK_API_KEY: Your Postmark server API token (required)
+# - PERSONAL_EMAIL: Default sender and fallback recipient (recommended)
+
+# Usage:
+# pdm run python3 ./korben.py --task send_email --subject "Test" --content "Hello!"
+# Override: pdm run python3 ./korben.py --task send_email --recipient "other@example.com" --subject "Test" --content "Hi"
+

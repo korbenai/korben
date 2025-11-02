@@ -9,15 +9,3 @@ tmp_dir: "tmp"
 
 # AI Agent name used for ControlFlow agents
 agent_name: "Korben"
-
-# Slack hooks configuration:
-# Define one or more named Slack webhooks.
-# See: https://api.slack.com/messaging/webhooks for how to create a webhook URL.
-
-slack_hooks:
-  default:
-    hook_url: "https://hooks.slack.com/services/your/alerts/webhook"
-  # Add more hooks as needed, e.g.:
-  # high-priority:
-  #   hook_url: "https://hooks.slack.com/services/your/ops/webhook"
-

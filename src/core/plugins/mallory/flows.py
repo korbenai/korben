@@ -5,6 +5,8 @@ import logging
 import controlflow as cf
 from src.core.plugins.mallory import tasks as mallory_tasks
 from src.core.plugins.utilities import tasks as utility_tasks
+from src.core.plugins.email import tasks as email_tasks
+from src.core.plugins.slack import tasks as slack_tasks
 from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
 
 logger = logging.getLogger(__name__)
@@ -82,7 +84,7 @@ def mallory_stories_workflow(**kwargs):
         return "\n".join(results)
     
     try:
-        email_result = utility_tasks.send_email(
+        email_result = email_tasks.send_email(
             recipient=recipient,
             subject=subject,
             content=stories_html
@@ -101,7 +103,7 @@ def mallory_stories_workflow(**kwargs):
     
     try:
         slack_message = f"*Latest Security Stories*\n\n{stories}"
-        slack_result = utility_tasks.send_slack_hook(
+        slack_result = slack_tasks.send_slack_hook(
             hook_name=hook_name,
             message=slack_message
         )

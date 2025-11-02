@@ -223,5 +223,6 @@ tmp/
 # Prefect
 .prefect/
 .prefectignore
-src/core/plugins/config.yml
-src/core/plugins/podcasts/config.yml
+
+# Make sure not to commit secrets and configuration!!! 
+src/core/plugins/*/config.yml
