@@ -16,6 +16,7 @@ dependencies = [
     "markdown",
     "google-api-python-client",
     "google-auth",
+    "boto3",
 ]
 requires-python = ">=3.13"
 readme = "README.md"
