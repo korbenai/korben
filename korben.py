@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
 """Main entry point for running tasks and flows."""
 
-import warnings
-# Suppress pydantic and pydantic_settings warnings from controlflow
-warnings.filterwarnings("ignore", category=UserWarning, module="pydantic_settings")
-warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._generate_schema")
-warnings.filterwarnings("ignore", message=".*Field.*")
-warnings.filterwarnings("ignore", message=".*Config key.*")
-
 import argparse
 import sys
 import logging

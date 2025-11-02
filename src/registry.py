@@ -1,6 +1,5 @@
 """Registry - auto-discovers and registers tasks and flows from plugins."""
 
-import os
 import importlib
 import inspect
 import logging
