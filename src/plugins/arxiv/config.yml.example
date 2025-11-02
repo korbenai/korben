@@ -1,0 +1,48 @@
+# arXiv Plugin Configuration
+# Copy this file to src/plugins/arxiv/config.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by arXiv tasks and flows
+variables:
+  # Default maximum number of results to return
+  max_results: 10
+  
+  # Default starting index for pagination
+  start: 0
+  
+  # Sort results by: 'relevance', 'lastUpdatedDate', or 'submittedDate'
+  sort_by: "relevance"
+  
+  # Sort order: 'ascending' or 'descending'
+  sort_order: "descending"
+  
+  # Optional: Default email recipient for flows (falls back to email plugin config)
+  # recipient: "your-email@example.com"
+  
+  # Optional: Default Slack webhook name for flows (falls back to slack plugin config)
+  # hook_name: "default"
+
+# Note: The arXiv API does not require an API key!
+
+# Usage:
+# Search for papers (task):
+# pdm run python3 ./korben.py --task arxiv_search --query "all:transformer"
+
+# Search by title:
+# pdm run python3 ./korben.py --task arxiv_search --query "ti:attention mechanisms"
+
+# Search by author:
+# pdm run python3 ./korben.py --task arxiv_search --query "au:lecun"
+
+# Search and notify via email and Slack (flow):
+# pdm run python3 ./korben.py --flow arxiv_search --query "all:neural architecture"
+
+# Query Format Examples:
+# - all:electron          # Search all fields
+# - ti:transformer        # Search in title
+# - au:smith              # Search by author
+# - abs:quantum           # Search in abstract
+# - cat:cs.AI             # Search by category
+# - ti:transformer AND au:vaswani  # Combine queries
+
+
