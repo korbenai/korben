@@ -225,4 +225,4 @@ tmp/
 .prefectignore
 
 # Make sure not to commit secrets and configuration!!! 
-src/core/plugins/*/config.yml
+src/plugins/*/config.yml

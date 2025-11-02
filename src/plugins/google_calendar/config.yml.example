@@ -1,0 +1,56 @@
+# Google Calendar Plugin Configuration
+# Copy this file to src/plugins/google_calendar/config.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by get_calendar_events task
+variables:
+  # Default accounts to fetch calendars for
+  # Can be overridden with --accounts argument
+  accounts:
+    - "you@example.com"
+    - "other@example.com"
+  
+  # Or use a single account:
+  # accounts:
+  #   - "you@example.com"
+  
+  # Default max results per account (optional, default: 100)
+  # max_results: 100
+
+# Credentials Setup:
+# Google Calendar uses service account credentials with domain-based lookup.
+# Credentials are searched in the following order:
+# 1. Domain-specific: ~/.google/credentials/{domain}/credentials.json
+#    Example: ~/.google/credentials/example.com/credentials.json
+# 2. Email-specific: ~/.google/credentials/{email}/credentials.json
+#    Example: ~/.google/credentials/user@example.com/credentials.json
+# 3. Default: ~/.google/credentials/credentials.json
+#
+# To set up credentials:
+# 1. Create a Google Cloud project
+# 2. Enable the Google Calendar API
+# 3. Create a service account
+# 4. Create and download a JSON key for the service account
+# 5. Place the JSON key in one of the locations above
+# 6. Grant the service account access to the calendar(s) you want to read
+
+# Usage Examples:
+# 
+# Get today's events for all accounts in config:
+# pdm run python3 ./korben.py --task get_calendar_events
+#
+# Get events for a single account:
+# pdm run python3 ./korben.py --task get_calendar_events --accounts "user@example.com"
+#
+# Get events for multiple accounts:
+# pdm run python3 ./korben.py --task get_calendar_events --accounts "user1@example.com,user2@example.com"
+#
+# Get events for a specific date:
+# pdm run python3 ./korben.py --task get_calendar_events --date "2025-11-05"
+#
+# Get events for a date range:
+# pdm run python3 ./korben.py --task get_calendar_events --start_date "2025-11-01" --end_date "2025-11-07"
+#
+# Get events for the next 7 days:
+# pdm run python3 ./korben.py --task get_calendar_events --days 7
+
