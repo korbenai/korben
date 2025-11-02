@@ -1,0 +1,13 @@
+# Google Calendar Plugin Configuration
+# Customize this file for your needs
+
+# Variables used by get_calendar_events task
+variables:
+  # Default accounts to fetch calendars for
+  # Can be overridden with --accounts argument
+  accounts:
+    - "jcran@0x0e.org"
+    - "jcran@mallory.ai"
+  
+  # Default max results per account
+  max_results: 100
