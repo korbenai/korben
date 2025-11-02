@@ -3,6 +3,7 @@
 import os
 import json
 import logging
+import uuid
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
@@ -155,6 +156,17 @@ def create_bucket(**kwargs):
                 error_msg = f"Failed to create bucket {bucket_name}: {e}"
                 logger.error(error_msg)
                 return f"ERROR: {error_msg}"
+        elif error_code == '403':
+            # Bucket exists but belongs to another AWS account, or no permission
+            error_msg = (
+                f"Bucket name '{bucket_name}' is not available. "
+                f"This could mean:\n"
+                f"  1. The bucket name is already taken by another AWS account (bucket names are globally unique)\n"
+                f"  2. You don't have permission to access this bucket\n"
+                f"Suggestion: Try a different bucket name with a unique suffix (e.g., '{bucket_name}-{uuid.uuid4().hex[:8]}')"
+            )
+            logger.error(error_msg)
+            return f"ERROR: {error_msg}"
         else:
             error_msg = f"Failed to check bucket {bucket_name}: {e}"
             logger.error(error_msg)
