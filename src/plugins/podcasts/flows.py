@@ -59,9 +59,10 @@ def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipi
 
 
 @cf.flow
-def podcast_workflow(**kwargs):
+def process_podcasts_workflow(**kwargs):
+
     """
-    ControlFlow flow for complete podcast processing.
+    ControlFlow flow for downloading, transcribing, and extracting wisdom from podcasts.
     
     Runs tasks in sequence:
     1. Download podcasts from feeds

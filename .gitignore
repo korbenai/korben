@@ -226,3 +226,6 @@ tmp/
 
 # Make sure not to commit secrets and configuration!!! 
 src/plugins/*/config.yml
+
+# linear plugin - ticket data 
+data/linear/tickets.json

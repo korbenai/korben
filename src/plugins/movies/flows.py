@@ -232,96 +232,96 @@ def trending_movies_workflow(**kwargs):
         return error_msg
 
 
-@cf.flow
-def popular_movies_workflow(**kwargs):
-    """
-    Get popular movies from current/recent years (sorted by popularity).
+# @cf.flow
+# def popular_movies_workflow(**kwargs):
+#     """
+#     Get popular movies from current/recent years (sorted by popularity).
     
-    Note: Uses discover API with popularity sort instead of trending endpoint,
-    because trending doesn't support date filtering.
+#     Note: Uses discover API with popularity sort instead of trending endpoint,
+#     because trending doesn't support date filtering.
     
-    Args:
-        limit: Maximum number of movies (default: 10)
-        min_rating: Minimum rating to filter (default: 7.0)
-        min_votes: Minimum vote count (default: 100)
-        start_year: Filter movies from this year onwards (default: current year)
-        years_back: How many years back to include (alternative to start_year)
-        recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
+#     Args:
+#         limit: Maximum number of movies (default: 10)
+#         min_rating: Minimum rating to filter (default: 7.0)
+#         min_votes: Minimum vote count (default: 100)
+#         start_year: Filter movies from this year onwards (default: current year)
+#         years_back: How many years back to include (alternative to start_year)
+#         recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
     
-    Returns:
-        Status message
-    """
-    import datetime
+#     Returns:
+#         Status message
+#     """
+#     import datetime
     
-    # Load plugin config and merge with kwargs (kwargs take precedence)
-    config = get_plugin_config('movies')
-    params = merge_config_with_kwargs(config, kwargs)
-    config_vars = config.get('variables', {})
+#     # Load plugin config and merge with kwargs (kwargs take precedence)
+#     config = get_plugin_config('movies')
+#     params = merge_config_with_kwargs(config, kwargs)
+#     config_vars = config.get('variables', {})
     
-    limit = params.get('limit', 10)
-    min_rating = params.get('min_rating', 7.0)
-    min_votes = params.get('min_votes', 100)
+#     limit = params.get('limit', 10)
+#     min_rating = params.get('min_rating', 7.0)
+#     min_votes = params.get('min_votes', 100)
     
-    # Only override recipient if explicitly set in movies config/kwargs
-    # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
-    recipient = params.get('recipient') or config_vars.get('recipient')
+#     # Only override recipient if explicitly set in movies config/kwargs
+#     # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
+#     recipient = params.get('recipient') or config_vars.get('recipient')
     
-    # Calculate start year
-    current_year = datetime.datetime.now().year
-    start_year = kwargs.get('start_year')
+#     # Calculate start year
+#     current_year = datetime.datetime.now().year
+#     start_year = kwargs.get('start_year')
     
-    if start_year is None:
-        years_back = kwargs.get('years_back')
-        if years_back is not None:
-            start_year = current_year - years_back
-        else:
-            # Default to current year only
-            start_year = current_year
+#     if start_year is None:
+#         years_back = kwargs.get('years_back')
+#         if years_back is not None:
+#             start_year = current_year - years_back
+#         else:
+#             # Default to current year only
+#             start_year = current_year
     
-    start_date = f"{start_year}-01-01"
-    logger.info(f"Fetching popular movies from {start_date} onwards...")
+#     start_date = f"{start_year}-01-01"
+#     logger.info(f"Fetching popular movies from {start_date} onwards...")
     
-    try:
-        # Use discover with popularity sort instead of trending endpoint
-        # This allows proper date filtering at the API level
-        tmdb_service = TMDBService()
-        discover_data = tmdb_service.discover_movies(
-            release_date_gte=start_date,
-            vote_average_gte=min_rating,
-            vote_count_gte=min_votes,
-            sort_by='popularity.desc'
-        )
+#     try:
+#         # Use discover with popularity sort instead of trending endpoint
+#         # This allows proper date filtering at the API level
+#         tmdb_service = TMDBService()
+#         discover_data = tmdb_service.discover_movies(
+#             release_date_gte=start_date,
+#             vote_average_gte=min_rating,
+#             vote_count_gte=min_votes,
+#             sort_by='popularity.desc'
+#         )
         
-        movies = discover_data.get('results', [])
+#         movies = discover_data.get('results', [])
         
-        # Limit results
-        movies_to_send = movies[:limit]
+#         # Limit results
+#         movies_to_send = movies[:limit]
         
-        if not movies_to_send:
-            result = f"No movies found from {start_year}+ with rating >= {min_rating}"
-            logger.info(result)
-            return result
+#         if not movies_to_send:
+#             result = f"No movies found from {start_year}+ with rating >= {min_rating}"
+#             logger.info(result)
+#             return result
         
-        # Sort by rating for display (already sorted by popularity from API)
-        movies_sorted = sorted(movies_to_send, key=lambda x: x.get('vote_average', 0), reverse=True)
+#         # Sort by rating for display (already sorted by popularity from API)
+#         movies_sorted = sorted(movies_to_send, key=lambda x: x.get('vote_average', 0), reverse=True)
         
-        # Format and send email
-        email_content = _format_movie_email(movies_sorted, ['Popular'])
-        subject = f"🎬 Popular Movies from {start_year}+"
+#         # Format and send email
+#         email_content = _format_movie_email(movies_sorted, ['Popular'])
+#         subject = f"🎬 Popular Movies from {start_year}+"
         
-        # Send email - only pass recipient if explicitly set in movies config
-        # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
-        email_kwargs = {'subject': subject, 'content': email_content}
-        if recipient:
-            email_kwargs['recipient'] = recipient
+#         # Send email - only pass recipient if explicitly set in movies config
+#         # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
+#         email_kwargs = {'subject': subject, 'content': email_content}
+#         if recipient:
+#             email_kwargs['recipient'] = recipient
         
-        email_result = email_tasks.send_email(**email_kwargs)
+#         email_result = email_tasks.send_email(**email_kwargs)
         
-        logger.info(f"Successfully sent {len(movies_sorted)} popular movies via email")
+#         logger.info(f"Successfully sent {len(movies_sorted)} popular movies via email")
         
-        return f"Found {len(movies_sorted)} popular movies\n{email_result}"
+#         return f"Found {len(movies_sorted)} popular movies\n{email_result}"
         
-    except Exception as e:
-        error_msg = f"Workflow failed: {e}"
-        logger.error(error_msg)
-        return error_msg
+#     except Exception as e:
+#         error_msg = f"Workflow failed: {e}"
+#         logger.error(error_msg)
+#         return error_msg

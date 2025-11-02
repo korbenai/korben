@@ -1,0 +1,27 @@
+# GitHub Plugin Configuration
+# Copy this file to src/plugins/github/config.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by GitHub tasks
+variables:
+  # Default description for gists
+  default_description: "Gist created by Korben"
+  
+  # Default visibility (true = public, false = secret)
+  public: true
+
+# Environment variables (required):
+# - GITHUB_API_KEY: Your GitHub Personal Access Token (PAT)
+#   Create one at: https://github.com/settings/tokens
+#   Required scopes: gist
+
+# Usage:
+# Create gist from a single file:
+# pdm run python3 ./korben.py --task create_gist_from_file --file_path /path/to/file.txt --description "My awesome file"
+
+# Create gist from a directory:
+# pdm run python3 ./korben.py --task create_gist_from_directory --directory_path /path/to/dir --description "Multiple files"
+
+# Create a private/secret gist:
+# pdm run python3 ./korben.py --task create_gist_from_file --file_path /path/to/file.txt --public false
+

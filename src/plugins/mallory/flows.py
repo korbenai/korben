@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 @cf.flow
-def mallory_stories_workflow(**kwargs):
+def mallory_trending_stories_workflow(**kwargs):
     """
     ControlFlow flow for fetching Mallory security stories and emailing them.
     
