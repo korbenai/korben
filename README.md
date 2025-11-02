@@ -4,6 +4,50 @@
 
 Hackable personal automation framework, bing badda boom.
 
+## Plugin Architecture
+
+Korben uses an **auto-discovery plugin system** - plugins are automatically registered at startup!
+
+```
+src/core/plugins/
+├── movies/       # TMDB movie discovery and recommendations
+├── books/        # ISBNdb book search and recommendations
+├── podcasts/     # Podcast download, transcribe, wisdom extraction
+├── mallory/      # Cybersecurity news from Mallory API
+└── utilities/    # Generic reusable tasks (email, files, markdown, AI)
+```
+
+### Plugin Structure
+
+Each plugin is a self-contained directory:
+
+```
+my_plugin/
+├── __init__.py              # Plugin marker
+├── tasks.py                 # Task implementations (auto-registered)
+├── flows.py                 # Workflow orchestrations (auto-registered)
+├── lib.py                   # Plugin-specific libraries (optional)
+├── config.yml.example       # Configuration template (optional)
+└── README.md                # Documentation
+```
+
+Everything needed for the plugin lives in one folder!
+
+### Auto-Registration
+
+**Zero configuration needed!** The system automatically:
+1. Scans `src/core/plugins/` for plugin directories
+2. Imports `tasks.py` and `flows.py` from each plugin
+3. Discovers all public functions via introspection
+4. Registers them in global TASKS and FLOWS dictionaries
+
+**Convention:**
+- ✅ All public functions in `tasks.py` → registered as tasks
+- ✅ All public functions in `flows.py` → registered as flows
+- ✅ Flow names ending with `_workflow` → suffix auto-removed
+- ❌ Functions starting with `_` → private (not registered)
+
+**Example:** Just create a plugin and it works immediately - no registry edits!
 
 ## Features
 
@@ -19,6 +63,13 @@ Hackable personal automation framework, bing badda boom.
 - **Mallory Stories Workflow** - Fetch and email cybersecurity stories:
   - `fetch_mallory_stories` - Fetch and summarize latest stories from Mallory API
   - Flow orchestrates: `fetch_mallory_stories` → `markdown_to_html` → `send_email`
+- **Trending Movies Workflow** - Discover and email trending movies:
+  - `discover_movies` - Query TMDB for movies matching criteria
+  - `trending_movies` - Find trending movies by genre and send via email
+  - `popular_movies` - Get popular movies from current/recent years
+- **Books Discovery** - Find and recommend books:
+  - `search_books` - Search ISBNdb for books by query, subject, or author
+  - `trending_ai_books` - Get trending AI books and email recommendations
 - **Entropy** - Example task demonstrating multi-agent AI collaboration
 - **CSV State Tracking** - Resume interrupted workflows without re-processing
 - **Composable Architecture** - Generic tasks composed via ControlFlow flows
@@ -48,6 +99,8 @@ cp config/core.yml.example config/core.yml
 export PERSONAL_EMAIL="your@email.com"
 export POSTMARK_API_KEY="your-postmark-api-key"
 export MALLORY_API_KEY="your-mallory-api-key"
+export TMDB_API_KEY="your-tmdb-api-key"        # Get from https://www.themoviedb.org/settings/api
+export ISBNDB_API_KEY="your-isbndb-api-key"    # Get from https://isbndb.com/isbn-database
 ```
 
 **Per-task config:**
@@ -103,14 +156,17 @@ Available tasks:
 
 Available flows:
   - mallory_stories
-  - podcasts
+  - podcast
+  - popular_movies
+  - trending_ai_books
+  - trending_movies
 ```
 
 ### Run a Task or Flow
 
 ```bash
 # Run complete podcasts workflow (ControlFlow flow)
-pdm run python3 ./korben.py --flow podcasts
+pdm run python3 ./korben.py --flow podcast
 
 # Run Mallory stories workflow (fetch and email security news)
 pdm run python3 ./korben.py --flow mallory_stories
@@ -130,6 +186,20 @@ pdm run python3 ./korben.py --task markdown_to_html --text "# Markdown text"
 # Fetch and summarize security stories from Mallory API
 pdm run python3 ./korben.py --task fetch_mallory_stories
 
+# Discover movies from TMDB
+pdm run python3 ./korben.py --task discover_movies --genres "28,878" --min_rating 7.0
+
+# Get trending movies and send via email
+pdm run python3 ./korben.py --flow trending_movies
+pdm run python3 ./korben.py --flow trending_movies --genres "sci-fi,action,thriller"
+
+# Get popular recent movies (all genres)
+pdm run python3 ./korben.py --flow popular_movies
+
+# Get trending AI books and send via email
+pdm run python3 ./korben.py --flow trending_ai_books
+pdm run python3 ./korben.py --flow trending_ai_books --query "machine learning" --limit 10
+
 # Extract wisdom from text
 echo "Your text here" | pdm run python3 ./korben.py --task extract_wisdom
 
@@ -139,7 +209,7 @@ pdm run python3 ./korben.py --task entropy
 
 ### Podcasts Flow
 
-**Complete workflow** - `--flow podcasts`:  
+**Complete workflow** - `--flow podcast`:  
 ControlFlow flow demonstrating task composition. Orchestrates podcast tasks and generic tasks.
 
 **Flow steps:**
@@ -187,6 +257,105 @@ pdm run python3 ./korben.py --task fetch_mallory_stories
 ```
 
 **Output:** Each story includes title, description, reference count, and URL to Mallory's detailed analysis.
+
+### Trending Movies Flow
+
+**Complete workflow** - `--flow trending_movies`:  
+Discovers popular movies from TMDB matching your preferred genres and emails them with ratings and descriptions.
+
+**Note:** Uses TMDB's discover API with popularity sorting instead of the trending endpoint, because the trending endpoint doesn't support date filtering. This gives you popular recent movies filtered by your criteria.
+
+**Flow steps:**
+1. `discover_movies` - Queries TMDB API with genre, rating, vote, and date filters
+2. Formats movies into beautiful HTML email with ratings, year, and descriptions
+3. `send_email` - Sends formatted email
+
+**Environment Variables:**
+- `TMDB_API_KEY` - TMDB API key (required) - Get from https://www.themoviedb.org/settings/api
+- `PERSONAL_EMAIL` - Your email (default recipient)
+- `POSTMARK_API_KEY` - Postmark API key (required)
+
+**Supported Genres:**
+- `sci-fi`, `action`, `thriller`, `drama`, `fantasy`, `horror`, `comedy`, `romance`, `documentary`, `animation`, `adventure`, `crime`, `mystery`, `war`, `western`, `history`, `music`, `family`
+
+**Usage:**
+```bash
+# Default: sci-fi, action, thriller, drama, fantasy (min rating 7.0)
+pdm run python3 ./korben.py --flow trending_movies
+
+# Custom genres
+pdm run python3 ./korben.py --flow trending_movies --genres "horror,thriller,mystery"
+
+# Custom filters
+pdm run python3 ./korben.py --flow trending_movies \
+  --genres "sci-fi,action" \
+  --min_rating 8.0 \
+  --min_votes 500 \
+  --years_back 2 \
+  --limit 5
+
+# Popular movies from current/recent years (all genres)
+pdm run python3 ./korben.py --flow popular_movies
+pdm run python3 ./korben.py --flow popular_movies --min_rating 8.0 --limit 15 --years_back 2
+
+# Just discover movies (no email)
+pdm run python3 ./korben.py --task discover_movies \
+  --genres "878,28" \
+  --min_rating 7.0 \
+  --min_votes 100
+```
+
+**Parameters:**
+- `genres` - Comma-separated genre names or IDs (default: sci-fi, action, thriller, drama, fantasy)
+- `min_rating` - Minimum TMDB rating 0-10 (default: 7.0)
+- `min_votes` - Minimum vote count (default: 100)
+- `years_back` - How many years back to search (default: 3)
+- `limit` - Maximum movies to include (default: 10)
+- `recipient` - Email recipient (default: PERSONAL_EMAIL)
+
+**Output:** Formatted email with movie title, year, rating, vote count, popularity score, and description.
+
+### Books Discovery Flow
+
+**Complete workflow** - `--flow trending_ai_books`:  
+Searches ISBNdb for books about AI and related topics, formats them beautifully, and emails the recommendations.
+
+**Flow steps:**
+1. `search_books` - Queries ISBNdb API with search criteria
+2. Formats books into beautiful HTML email with title, author, publisher, ISBN, and synopsis
+3. `send_email` - Sends formatted email
+
+**Environment Variables:**
+- `ISBNDB_API_KEY` - ISBNdb API key (required) - Get from https://isbndb.com/isbn-database
+- `PERSONAL_EMAIL` - Your email (default recipient)
+- `POSTMARK_API_KEY` - Postmark API key (required)
+
+**Usage:**
+```bash
+# Default: search for "artificial intelligence" books
+pdm run python3 ./korben.py --flow trending_ai_books
+
+# Custom search query
+pdm run python3 ./korben.py --flow trending_ai_books --query "machine learning"
+
+# Search by subject
+pdm run python3 ./korben.py --flow trending_ai_books --subject "Computer Science" --limit 10
+
+# Search books directly (no email)
+pdm run python3 ./korben.py --task search_books --query "deep learning" --limit 20
+
+# Get book details by ISBN
+pdm run python3 ./korben.py --task get_book_details --isbn "9780262046244"
+```
+
+**Parameters:**
+- `query` - Search query (default: "artificial intelligence")
+- `subject` - Search by subject category instead
+- `author` - Search by author name
+- `limit` - Maximum books to include (default: 15)
+- `recipient` - Email recipient (default: PERSONAL_EMAIL)
+
+**Output:** Formatted email with book title, author(s), publisher, publication date, ISBN, and synopsis.
 
 ### Extract Wisdom Task
 
@@ -266,22 +435,72 @@ tmp_dir: "tmp"    # Where temporary files are stored
 export PERSONAL_EMAIL="your@email.com"
 export POSTMARK_API_KEY="your-postmark-api-key"  
 export MALLORY_API_KEY="your-mallory-api-key"
+export TMDB_API_KEY="your-tmdb-api-key"
+export ISBNDB_API_KEY="your-isbndb-api-key"
 ```
 
-### Task Configuration
+### Plugin Configuration
 
-**Podcasts** - `config/podcasts.yml`:
+Each plugin can have its own configuration file with a standard `variables` section.
+
+**Location:** `src/core/plugins/{plugin_name}/config.yml` (copy from `.example` in plugin folder)
+
+**Standard Format:**
+```yaml
+# All plugin configs follow this format
+variables:
+  # Plugin-specific variables
+  query: "value"
+  limit: 15
+  # ... other variables
+
+# Optional: presets, advanced options, etc.
+```
+
+**Examples:**
+
+**Books Plugin:**
+```bash
+cp src/core/plugins/books/config.yml.example src/core/plugins/books/config.yml
+vim src/core/plugins/books/config.yml
+```
+
+```yaml
+variables:
+  query: "artificial intelligence"
+  limit: 15
+  min_year: 2020
+```
+
+**Movies Plugin:**
+```bash
+cp src/core/plugins/movies/config.yml.example src/core/plugins/movies/config.yml
+vim src/core/plugins/movies/config.yml
+```
+
+```yaml
+variables:
+  genres:
+    - sci-fi
+    - action
+    - thriller
+  min_rating: 7.0
+  limit: 10
+```
+
+**Podcasts Plugin:**
 ```bash
 cp config/podcasts.yml.example config/podcasts.yml
 vim config/podcasts.yml
 ```
 
-Example:
 ```yaml
 days_back: 7
 podcasts:
   my_podcast: "https://example.com/feed.xml"
 ```
+
+**Note:** Podcasts config remains in `config/` directory since it's used for global podcast management.
 
 ### Data Storage
 
@@ -304,44 +523,74 @@ data/
 
 CSV tracker prevents re-processing and allows resuming interrupted workflows.
 
-## Creating New Tasks
+## Creating New Plugins
 
-1. **Create a new task file** in `src/core/tasks/`:
-   ```python
-   """Your task description."""
-   import controlflow as cf
-   
-   def run(**kwargs):
-       """Your task implementation."""
-       # Your code here
-       return "Task completed!"
-   ```
+### Quick Start - Weather Plugin Example
 
-2. **Register the task** in `src/core/registry.py`:
-   ```python
-   from src.core.tasks import your_task
-   
-   TASKS = {
-       "your_task": your_task.run,
-       # ... other tasks
-   }
-   ```
+**1. Create plugin directory:**
+```bash
+mkdir -p src/core/plugins/weather
+```
 
-3. **Run it:**
-   ```bash
-   pdm run python3 ./korben.py --task your_task
-   ```
+**2. Create `tasks.py`:**
+```python
+"""Weather plugin tasks."""
+
+def get_forecast(**kwargs):
+    """Get weather forecast for a location."""
+    location = kwargs.get('location', 'San Francisco')
+    return f"Weather for {location}: Sunny, 75°F"
+
+# Private helper (not registered)
+def _api_call(location):
+    return {"temp": 75}
+```
+
+**3. Create `flows.py` (optional):**
+```python
+"""Weather plugin flows."""
+import controlflow as cf
+from src.core.plugins.weather import tasks as weather_tasks
+from src.core.plugins.utilities import tasks as utility_tasks
+
+@cf.flow
+def daily_weather_workflow(**kwargs):
+    """Auto-registered as 'daily_weather' (removes _workflow suffix)."""
+    forecast = weather_tasks.get_forecast(**kwargs)
+    utility_tasks.send_email(
+        subject="Daily Weather",
+        content=forecast,
+        **kwargs
+    )
+    return forecast
+```
+
+**4. Create `README.md`:**
+```markdown
+# Weather Plugin
+Get weather forecasts and send via email.
+```
+
+**5. Done! Auto-registered instantly:**
+```bash
+pdm run python3 ./korben.py --list
+# Shows: get_forecast, daily_weather
+
+pdm run python3 ./korben.py --task get_forecast --location "Paris"
+pdm run python3 ./korben.py --flow daily_weather
+```
+
+**No registry edits needed!** The system automatically discovers and registers your plugin.
 
 ## Project Structure
 
 ```
-core/
+korben/
 ├── config/                    # Configuration files
 │   ├── core.yml.example       # Example core config
 │   ├── core.yml               # Core config (gitignored)
 │   ├── podcasts.yml.example   # Example podcast config
 │   ├── podcasts.yml           # Podcast config (gitignored)
-│   ├── workers.py             # Worker/task mapping config
 │   └── README.md
 ├── deployments/               # Prefect Cloud deployments
 │   ├── prefect_cloud.py       # Deploy to Prefect Cloud
@@ -356,24 +605,37 @@ core/
 ├── src/
 │   ├── core/
 │   │   ├── registry.py        # Task & flow registry
-│   │   ├── flows/             # ControlFlow orchestrations
-│   │   │   ├── podcasts.py    # Podcast workflow flow
-│   │   │   └── mallory_stories.py  # Mallory stories workflow flow
-│   │   └── tasks/             # Task implementations
-│   │       ├── download_podcasts.py    # Downloads podcasts
-│   │       ├── transcribe_podcasts.py  # Transcribes to text
-│   │       ├── extract_wisdom.py       # Extracts wisdom from text (generic)
-│   │       ├── markdown_to_html.py     # Converts markdown to HTML (generic)
-│   │       ├── send_email.py           # Sends email (generic)
-│   │       ├── read_file.py            # Reads file (generic)
-│   │       ├── write_file.py           # Writes file (generic)
-│   │       ├── fetch_mallory_stories.py  # Fetches security stories
-│   │       └── entropy.py
-│   └── lib/                   # Shared utilities
-│       ├── email.py           # Email sending via Postmark
-│       ├── llm.py             # LLM utilities (Whisper)
-│       ├── podcast_utils.py   # Podcast tracking & config
-│       └── core_utils.py      # Core config utilities
+│   │   └── plugins/           # 🆕 Self-contained plugin modules
+│   │       ├── movies/        # TMDB movie discovery
+│   │       │   ├── tasks.py   # discover_movies
+│   │       │   ├── flows.py   # trending_movies, popular_movies
+│   │       │   ├── lib.py     # TMDB API client
+│   │       │   ├── config.yml.example  # Plugin configuration template
+│   │       │   └── README.md
+│   │       ├── books/         # ISBNdb book search
+│   │       │   ├── tasks.py   # search_books, get_book_details
+│   │       │   ├── flows.py   # trending_ai_books
+│   │       │   ├── lib.py     # ISBNdb API client
+│   │       │   ├── config.yml.example  # Plugin configuration template
+│   │       │   └── README.md
+│   │       ├── podcasts/      # Podcast processing
+│   │       │   ├── tasks.py   # download_podcasts, transcribe_podcasts
+│   │       │   ├── flows.py   # podcast_workflow
+│   │       │   ├── lib.py     # podcast_utils, whisper
+│   │       │   └── README.md
+│   │       ├── mallory/       # Cybersecurity news
+│   │       │   ├── tasks.py   # fetch_mallory_stories
+│   │       │   ├── flows.py   # mallory_stories_workflow
+│   │       │   ├── config.yml.example  # Plugin configuration template
+│   │       │   └── README.md
+│   │       └── utilities/     # Generic reusable tasks
+│   │           ├── tasks.py   # send_email, read_file, write_file, etc.
+│   │           ├── lib.py     # email client
+│   │           └── README.md
+│   └── lib/                   # Shared core utilities
+│       └── core_utils.py      # Config access (used by all plugins)
+├── examples/
+│   └── tmdb_example.py        # TMDB API usage examples
 ├── tests/
 ├── korben.py                  # Main CLI entry point
 ├── pyproject.toml             # Dependencies
@@ -382,38 +644,49 @@ core/
 
 ## Architecture
 
-### Tasks & Flows
+### Plugin-Based Design
 
-**Tasks** (`src/core/tasks/`) - Independent units of work:
+**Plugins** (`src/core/plugins/`) - Fully self-contained modules:
+```
+plugins/
+├── movies/          # Movie discovery (TMDB)
+├── books/           # Book search (ISBNdb)
+├── podcasts/        # Podcast processing
+├── mallory/         # Security news
+└── utilities/       # Generic reusable tasks
+```
+
+Each plugin is completely self-contained:
+- **tasks.py** - Task implementations
+- **flows.py** - Workflow orchestrations (if needed)
+- **lib.py** - Plugin-specific libraries (if needed)
+- **config.yml.example** - Configuration template (if needed)
+- **README.md** - Documentation
+
+**Tasks** - Independent units of work:
 ```python
-def run(**kwargs):
+def task_name(**kwargs):
     # Task implementation
     return result
 ```
 
-**Flows** (`src/core/flows/`) - Orchestrate tasks using `@cf.flow`:
+**Flows** - Orchestrate tasks using `@cf.flow`:
 ```python
+# From plugins/podcasts/flows.py
 @cf.flow
 def process_single_transcript(transcript_path, email):
-    text = read_file.run(file_path=transcript_path)
-    wisdom_md = extract_wisdom.run(text=text)           # AI extraction → markdown
-    write_file.run(file_path=wisdom_file, content=wisdom_md)
-    wisdom_html = markdown_to_html.run(text=wisdom_md)  # markdown → HTML
-    send_email.run(recipient=email, subject=subject, content=wisdom_html)
+    text = utility_tasks.read_file(file_path=transcript_path)
+    wisdom_md = utility_tasks.extract_wisdom(text=text)
+    utility_tasks.write_file(file_path=wisdom_file, content=wisdom_md)
+    wisdom_html = utility_tasks.markdown_to_html(text=wisdom_md)
+    utility_tasks.send_email(recipient=email, subject=subject, content=wisdom_html)
 
+# From plugins/movies/flows.py
 @cf.flow
-def podcast_workflow(**kwargs):
-    download_podcasts.run(**kwargs)
-    transcribe_podcasts.run(**kwargs)
-    # Process each transcript using generic tasks
-    for transcript in transcripts:
-        process_single_transcript(transcript, email)
-
-@cf.flow
-def mallory_stories_workflow(**kwargs):
-    stories = fetch_mallory_stories.run(**kwargs)       # Fetch stories
-    stories_html = markdown_to_html.run(text=stories)   # markdown → HTML
-    send_email.run(recipient=email, subject=subject, content=stories_html)
+def trending_movies_workflow(**kwargs):
+    movies = movie_tasks.discover_movies(genres=genre_ids, ...)
+    movies_html = format_movie_email(movies, genres)
+    utility_tasks.send_email(recipient=email, subject=subject, content=movies_html)
 ```
 
 **AI Operations** use `cf.run()` for agent-based processing:
@@ -430,22 +703,102 @@ def extract_wisdom(text):
     )
 ```
 
-**Registry** (`src/core/registry.py`) - Maps names to tasks and flows:
+**Registry** (`src/core/registry.py`) - Maps names to tasks and flows from plugins:
 ```python
+# Import from plugins
+from src.core.plugins.movies import tasks as movie_tasks, flows as movie_flows
+from src.core.plugins.podcasts import tasks as podcast_tasks, flows as podcast_flows
+from src.core.plugins.mallory import tasks as mallory_tasks, flows as mallory_flows
+from src.core.plugins.utilities import tasks as utility_tasks
+
 TASKS = {
-    "download_podcasts": download_podcasts.run,
-    "fetch_mallory_stories": fetch_mallory_stories.run,
-    "extract_wisdom": extract_wisdom.run,
-    "markdown_to_html": markdown_to_html.run,
+    "discover_movies": movie_tasks.discover_movies,
+    "download_podcasts": podcast_tasks.download_podcasts,
+    "send_email": utility_tasks.send_email,
     # ... other tasks
 }
+
 FLOWS = {
-    "podcasts": podcast_workflow,
-    "mallory_stories": mallory_stories_workflow,
+    "trending_movies": movie_flows.trending_movies_workflow,
+    "podcasts": podcast_flows.podcast_workflow,
+    # ... other flows
 }
 ```
 
-This follows ControlFlow best practices: tasks are independent, flows orchestrate, `cf.run()` for AI.
+### Creating New Plugins
+
+**Auto-Registration** - Plugins are automatically discovered at startup! No manual registration needed.
+
+To add a new plugin:
+
+1. **Create plugin directory:**
+   ```bash
+   mkdir -p src/core/plugins/my_plugin
+   ```
+
+2. **Add tasks.py:**
+   ```python
+   """My plugin tasks."""
+   
+   def my_task(**kwargs):
+       """Task implementation."""
+       return "Task completed!"
+   
+   def another_task(**kwargs):
+       """Another task."""
+       return "Done!"
+   
+   # Helper functions: prefix with _ to hide from CLI
+   def _internal_helper():
+       return "Not registered"
+   ```
+
+3. **Add flows.py (optional):**
+   ```python
+   """My plugin flows."""
+   import controlflow as cf
+   
+   @cf.flow
+   def my_workflow(**kwargs):
+       """Public workflow - auto-registered as 'my' (removes _workflow suffix)."""
+       result = my_task(**kwargs)
+       return result
+   
+   @cf.flow
+   def _helper_flow(**kwargs):
+       """Internal helper - not registered (starts with _)."""
+       pass
+   ```
+
+4. **Add lib.py (optional):**
+   ```python
+   """Plugin-specific libraries."""
+   # API clients, utilities, etc.
+   ```
+
+5. **Add README.md:**
+   Document your plugin's tasks, flows, and usage.
+
+6. **Done!** - Your plugin is automatically discovered and registered:
+   ```bash
+   pdm run python3 ./korben.py --list
+   # Shows: my_task, another_task, my
+   
+   pdm run python3 ./korben.py --task my_task
+   pdm run python3 ./korben.py --flow my
+   ```
+
+**Best Practices:**
+- 🎯 **Self-Contained** - Each plugin is independent
+- 📝 **Clear Naming** - Function names become CLI commands
+- 🔒 **Private Helpers** - Prefix with `_` to hide from CLI
+- 📚 **Document** - Include README.md for each plugin
+- 🧪 **Testable** - Plugins are isolated and easy to test
+
+**Benefits:**
+- 🚀 **Fast Development** - Create folder, write code, done
+- 🔌 **True Pluggability** - No core modifications needed
+- 🔍 **Auto-Discovery** - `--list` shows everything automatically
 
 ## Dependencies
 

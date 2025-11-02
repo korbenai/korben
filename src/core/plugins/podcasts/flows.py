@@ -1,37 +1,32 @@
-"""Podcasts workflow - orchestrates the complete podcast workflow using ControlFlow."""
+"""Podcasts flows - complete podcast processing workflow."""
 
 import os
 import controlflow as cf
-from src.core.tasks import download_podcasts
-from src.core.tasks import transcribe_podcasts
-from src.core.tasks import read_file
-from src.core.tasks import write_file
-from src.core.tasks import extract_wisdom
-from src.core.tasks import markdown_to_html
-from src.core.tasks import send_email
-from src.lib.podcast_utils import get_data_dir, get_tracking_csv, get_podcast_status, update_podcast_status
+from src.core.plugins.podcasts import tasks as podcast_tasks
+from src.core.plugins.utilities import tasks as utility_tasks
+from src.core.plugins.podcasts.lib import get_data_dir, get_tracking_csv, get_podcast_status, update_podcast_status
 
 
 @cf.flow
-def process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipient_email):
+def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipient_email):
     """
     Process a single transcript: read → extract wisdom → write → convert to HTML → email.
     
     Composes generic tasks to process one podcast transcript.
     """
     # Step 1: Read transcript file
-    text = read_file.run(file_path=transcript_path)
+    text = utility_tasks.read_file(file_path=transcript_path)
     
     # Step 2: Extract wisdom (returns markdown)
-    wisdom_markdown = extract_wisdom.run(text=text)
+    wisdom_markdown = utility_tasks.extract_wisdom(text=text)
     
     # Step 3: Write wisdom file (markdown)
     wisdom_filename = os.path.basename(transcript_path).replace('.txt', '.wisdom.md')
     wisdom_file = os.path.join(wisdom_dir, wisdom_filename)
-    write_file.run(file_path=wisdom_file, content=wisdom_markdown)
+    utility_tasks.write_file(file_path=wisdom_file, content=wisdom_markdown)
     
     # Step 4: Convert markdown to HTML for email
-    wisdom_html = markdown_to_html.run(text=wisdom_markdown)
+    wisdom_html = utility_tasks.markdown_to_html(text=wisdom_markdown)
     
     # Step 5: Generate subject and send email (HTML content)
     file_name = os.path.splitext(os.path.basename(transcript_path))[0]
@@ -39,7 +34,7 @@ def process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipie
     if len(file_name) > 80:
         subject += "..."
     
-    send_email.run(recipient=recipient_email, subject=subject, content=wisdom_html)
+    utility_tasks.send_email(recipient=recipient_email, subject=subject, content=wisdom_html)
     
     # Update CSV tracking
     update_podcast_status(podcast_file, summarized=True, emailed=True)
@@ -66,12 +61,12 @@ def podcast_workflow(**kwargs):
     
     # Step 1: Download podcasts
     logger.info("Step 1: Downloading podcasts...")
-    download_result = download_podcasts.run(**kwargs)
+    download_result = podcast_tasks.download_podcasts(**kwargs)
     results.append(download_result)
     
     # Step 2: Transcribe podcasts
     logger.info("Step 2: Transcribing podcasts...")
-    transcribe_result = transcribe_podcasts.run(**kwargs)
+    transcribe_result = podcast_tasks.transcribe_podcasts(**kwargs)
     results.append(transcribe_result)
     
     # Step 3: Extract wisdom and email for each transcript
@@ -131,7 +126,7 @@ def podcast_workflow(**kwargs):
                 # Process using generic tasks
                 logger.info(f"Processing: {file}")
                 try:
-                    process_single_transcript(
+                    _process_single_transcript(
                         transcript_path=transcript_path,
                         podcast_file=podcast_file,
                         wisdom_dir=wisdom_dir,

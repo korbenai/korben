@@ -1,0 +1,20 @@
+# Mallory Plugin Configuration
+# Copy this file to src/core/plugins/mallory/config.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by mallory_stories flow
+variables:
+  # Display options
+  limit: 20                              # Maximum number of stories to fetch
+  
+  # Email settings
+  subject: "Daily Security Stories from Mallory"
+  # recipient: "you@example.com"         # Optional, falls back to PERSONAL_EMAIL env var
+  
+  # Slack integration (optional)
+  # slack_hook: "default"                # Slack webhook name
+
+# Usage:
+# pdm run python3 ./korben.py --flow mallory_stories
+# Override: pdm run python3 ./korben.py --flow mallory_stories --limit 10 --recipient "team@example.com"
+

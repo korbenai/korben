@@ -1,0 +1,42 @@
+# Books Plugin Configuration
+# Copy this file to config/books.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by trending_ai_books flow
+variables:
+  # Search parameters
+  query: "ai cybersecurity"              # Default search query
+  # subject: "Artificial Intelligence"   # Alternative: search by subject instead of query
+  
+  # Display options
+  limit: 15                              # Maximum number of books to return
+  
+  # Filtering (optional)
+  min_year: 2024                         # Only books published after this year
+  
+  # Email settings (optional, falls back to PERSONAL_EMAIL env var)
+  # recipient: "you@example.com"
+
+# Predefined search queries for quick access
+# Access via: --query-preset ml
+query_presets:
+  ai: "artificial intelligence"
+  ml: "machine learning"
+  dl: "deep learning"
+  nlp: "natural language processing"
+  cv: "computer vision"
+  robotics: "robotics and automation"
+  ethics: "AI ethics"
+  cybersec: "ai cybersecurity"
+
+# Usage Examples:
+# 
+# Use config defaults:
+#   pdm run python3 ./korben.py --flow trending_ai_books
+# 
+# Override query:
+#   pdm run python3 ./korben.py --flow trending_ai_books --query "deep learning"
+# 
+# Override limit:
+#   pdm run python3 ./korben.py --flow trending_ai_books --limit 20
+

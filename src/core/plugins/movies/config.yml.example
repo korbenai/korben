@@ -1,0 +1,55 @@
+# Movies Plugin Configuration
+# Copy this file to config/movies.yml and customize
+# All variables can be overridden via CLI arguments
+
+# Variables used by trending_movies and popular_movies flows
+variables:
+  # Genre preferences
+  # Genre IDs: https://developer.themoviedb.org/reference/genre-movie-list
+  genres:
+    - sci-fi      # 878
+    - action      # 28
+    - thriller    # 53
+    - drama       # 18
+    - fantasy     # 14
+  
+  # Quality filters
+  min_rating: 7.0                        # Minimum TMDB rating (0-10)
+  min_votes: 100                         # Minimum vote count
+  
+  # Display options
+  limit: 10                              # Maximum movies to return
+  
+  # Date filtering
+  start_year: null                       # null = current year only, or set year like 2024
+  years_back: null                       # Alternative: 2 = last 2 years
+  
+  # Sort preferences
+  sort_by: "popularity.desc"             # Options: popularity.desc, vote_average.desc, release_date.desc
+  
+  # Runtime filters (in minutes)
+  min_runtime: 60                        # Skip short films
+  max_runtime: null                      # null = no limit
+  
+  # Email settings (optional, falls back to PERSONAL_EMAIL env var)
+  # recipient: "you@example.com"
+
+# Genre presets for quick access
+genre_presets:
+  action: "action,thriller"
+  scifi: "sci-fi,fantasy"
+  horror: "horror,thriller,mystery"
+  family: "family,animation,comedy"
+  serious: "drama,history,documentary"
+
+# Usage Examples:
+# 
+# Use config defaults:
+#   pdm run python3 ./korben.py --flow trending_movies
+# 
+# Override genres:
+#   pdm run python3 ./korben.py --flow trending_movies --genres "horror,thriller"
+# 
+# Override rating:
+#   pdm run python3 ./korben.py --flow trending_movies --min_rating 8.0
+

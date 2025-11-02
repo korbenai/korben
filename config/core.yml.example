@@ -11,7 +11,7 @@ tmp_dir: "tmp"
 agent_name: "Korben"
 
 # Slack hooks configuration:
-# Define one or more named Slack incoming webhooks.
+# Define one or more named Slack webhooks.
 # See: https://api.slack.com/messaging/webhooks for how to create a webhook URL.
 
 slack_hooks:

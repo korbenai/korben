@@ -20,7 +20,7 @@ import requests
 import controlflow as cf
 from src.lib.core_utils import get_agent_name
 
-def run(**kwargs):
+def fetch_mallory_stories(**kwargs):
     """Run mallory_stories task to fetch latest stories from Mallory API and summarize them."""
     # Get API key from environment
     api_key = os.environ.get("MALLORY_API_KEY")
