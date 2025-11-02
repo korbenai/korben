@@ -80,85 +80,85 @@ def _format_books_email(books: list, topic: str) -> str:
     return html
 
 
-@cf.flow
-def trending_ai_books_workflow(**kwargs):
-    """
-    Search for trending AI books and email them.
+# @cf.flow
+# def trending_ai_books_workflow(**kwargs):
+#     """
+#     Search for trending AI books and email them.
     
-    Config file: config/books.yml (optional)
+#     Config file: config/books.yml (optional)
     
-    Args:
-        query: Search query (default: from config or 'artificial intelligence')
-        subject: Search by subject instead
-        limit: Maximum number of books (default: from config or 15)
-        recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
+#     Args:
+#         query: Search query (default: from config or 'artificial intelligence')
+#         subject: Search by subject instead
+#         limit: Maximum number of books (default: from config or 15)
+#         recipient: Email recipient (optional - if not set, falls back to email plugin config, then PERSONAL_EMAIL env var)
     
-    Returns:
-        Status message
-    """
-    # Load plugin config and merge with kwargs (kwargs take precedence)
-    config = get_plugin_config('books')
-    params = merge_config_with_kwargs(config, kwargs)
+#     Returns:
+#         Status message
+#     """
+#     # Load plugin config and merge with kwargs (kwargs take precedence)
+#     config = get_plugin_config('books')
+#     params = merge_config_with_kwargs(config, kwargs)
     
-    # Extract parameters from config.variables section or kwargs
-    config_vars = config.get('variables', {})
-    query = params.get('query') or config_vars.get('query', 'artificial intelligence')
-    subject_filter = params.get('subject') or config_vars.get('subject')
-    limit = params.get('limit') or config_vars.get('limit', 15)
+#     # Extract parameters from config.variables section or kwargs
+#     config_vars = config.get('variables', {})
+#     query = params.get('query') or config_vars.get('query', 'artificial intelligence')
+#     subject_filter = params.get('subject') or config_vars.get('subject')
+#     limit = params.get('limit') or config_vars.get('limit', 15)
     
-    # Only override recipient if explicitly set in books config/kwargs
-    # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
-    recipient = params.get('recipient') or config_vars.get('recipient')
+#     # Only override recipient if explicitly set in books config/kwargs
+#     # Otherwise, let email plugin handle its own config/fallback to PERSONAL_EMAIL
+#     recipient = params.get('recipient') or config_vars.get('recipient')
     
-    logger.info(f"Step 1: Searching for AI books...")
+#     logger.info(f"Step 1: Searching for AI books...")
     
-    try:
-        # Search for books
-        search_params = {
-            'limit': limit
-        }
+#     try:
+#         # Search for books
+#         search_params = {
+#             'limit': limit
+#         }
         
-        if subject_filter:
-            search_params['subject'] = subject_filter
-        else:
-            search_params['query'] = query
+#         if subject_filter:
+#             search_params['subject'] = subject_filter
+#         else:
+#             search_params['query'] = query
         
-        search_result = book_tasks.search_books(**search_params)
-        search_data = json.loads(search_result)
+#         search_result = book_tasks.search_books(**search_params)
+#         search_data = json.loads(search_result)
         
-        if 'error' in search_data:
-            error_msg = f"Failed to search books: {search_data['error']}"
-            logger.error(error_msg)
-            return error_msg
+#         if 'error' in search_data:
+#             error_msg = f"Failed to search books: {search_data['error']}"
+#             logger.error(error_msg)
+#             return error_msg
         
-        books = search_data.get('books', [])
+#         books = search_data.get('books', [])
         
-        if not books:
-            result = f"No books found for: {query or subject_filter}"
-            logger.info(result)
-            return result
+#         if not books:
+#             result = f"No books found for: {query or subject_filter}"
+#             logger.info(result)
+#             return result
         
-        logger.info(f"Found {len(books)} books")
+#         logger.info(f"Found {len(books)} books")
         
-        # Step 2: Format and send email
-        logger.info("Step 2: Formatting and sending email...")
+#         # Step 2: Format and send email
+#         logger.info("Step 2: Formatting and sending email...")
         
-        email_content = _format_books_email(books, query or subject_filter)
-        email_subject = f"📚 Trending AI Books: {query or subject_filter}"
+#         email_content = _format_books_email(books, query or subject_filter)
+#         email_subject = f"📚 Trending AI Books: {query or subject_filter}"
         
-        # Send email - only pass recipient if explicitly set in books config
-        # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
-        email_kwargs = {'subject': email_subject, 'content': email_content}
-        if recipient:
-            email_kwargs['recipient'] = recipient
+#         # Send email - only pass recipient if explicitly set in books config
+#         # Otherwise let email plugin use its own config/PERSONAL_EMAIL fallback
+#         email_kwargs = {'subject': email_subject, 'content': email_content}
+#         if recipient:
+#             email_kwargs['recipient'] = recipient
         
-        email_result = email_tasks.send_email(**email_kwargs)
+#         email_result = email_tasks.send_email(**email_kwargs)
         
-        logger.info(f"Successfully sent {len(books)} books via email")
+#         logger.info(f"Successfully sent {len(books)} books via email")
         
-        return f"Found {len(books)} books\n{email_result}"
+#         return f"Found {len(books)} books\n{email_result}"
         
-    except Exception as e:
-        error_msg = f"Workflow failed: {e}"
-        logger.error(error_msg)
-        return error_msg
+#     except Exception as e:
+#         error_msg = f"Workflow failed: {e}"
+#         logger.error(error_msg)
+#         return error_msg
