@@ -69,7 +69,7 @@ def _check_plugin_dependencies(plugin_name: str, required_plugins: Set[str]) -> 
 
 def discover_and_register_plugins():
     """
-    Automatically discover and register all plugins from src/core/plugins/.
+    Automatically discover and register all plugins from src/plugins/.
     
     Scans for:
     - tasks.py: Registers all callable functions as tasks
@@ -111,7 +111,7 @@ def discover_and_register_plugins():
         
         # Try to import tasks.py
         try:
-            tasks_module = importlib.import_module(f'src.core.plugins.{plugin_name}.tasks')
+            tasks_module = importlib.import_module(f'src.plugins.{plugin_name}.tasks')
             
             # Extract dependencies
             task_deps = _extract_dependencies(tasks_module)
@@ -131,7 +131,7 @@ def discover_and_register_plugins():
         
         # Try to import flows.py
         try:
-            flows_module = importlib.import_module(f'src.core.plugins.{plugin_name}.flows')
+            flows_module = importlib.import_module(f'src.plugins.{plugin_name}.flows')
             
             # Extract dependencies
             flow_deps = _extract_dependencies(flows_module)

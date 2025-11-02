@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from prefect import flow
 from prefect.deployments import Deployment
 from prefect.server.schemas.schedules import CronSchedule
-from src.core.flows.podcasts import podcast_workflow
+from src.plugins.podcasts.flows import podcast_workflow
 
 # Set up logging
 logger = logging.getLogger(__name__)

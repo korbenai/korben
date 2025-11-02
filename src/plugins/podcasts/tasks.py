@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timedelta
 import requests
 import getpodcast
-from src.core.plugins.podcasts.lib import (
+from src.plugins.podcasts.lib import (
     get_data_dir, init_tracking, load_podcasts_config,
     get_podcast_status, update_podcast_status, transcribe_with_whisper
 )

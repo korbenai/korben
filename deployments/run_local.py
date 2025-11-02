@@ -7,7 +7,7 @@ import logging
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.core.flows.podcasts import podcast_workflow
+from src.plugins.podcasts.flows import podcast_workflow
 
 # Set up logging
 logger = logging.getLogger(__name__)

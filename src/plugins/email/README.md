@@ -27,10 +27,10 @@ email/
 
 ### Configuration File (Optional)
 
-**Location:** `src/core/plugins/email/config.yml`
+**Location:** `src/plugins/email/config.yml`
 
 ```bash
-cp src/core/plugins/email/config.yml.example src/core/plugins/email/config.yml
+cp src/plugins/email/config.yml.example src/plugins/email/config.yml
 ```
 
 ```yaml

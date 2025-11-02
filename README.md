@@ -9,7 +9,7 @@ Hackable personal automation framework built on ControlFlow and Prefect - and pl
 Korben uses an **auto-discovery plugin system** - plugins are automatically registered at startup.
 
 ```
-src/core/plugins/
+src/plugins/
 ├── movies/       # TMDB movie discovery and recommendations
 ├── books/        # ISBNdb book search and recommendations
 ├── podcasts/     # Podcast download, transcribe, wisdom extraction
@@ -38,7 +38,7 @@ Everything needed for the plugin lives in one folder!
 ### Auto-Registration
 
 **Zero configuration needed!** The system automatically:
-1. Scans `src/core/plugins/` for plugin directories
+1. Scans `src/plugins/` for plugin directories
 2. Imports `tasks.py` and `flows.py` from each plugin
 3. Discovers all public functions via introspection
 4. Registers them in global TASKS and FLOWS dictionaries
@@ -454,7 +454,7 @@ export ISBNDB_API_KEY="your-isbndb-api-key"
 
 Each plugin can have its own configuration file with a standard `variables` section.
 
-**Location:** `src/core/plugins/{plugin_name}/config.yml` (copy from `.example` in plugin folder)
+**Location:** `src/plugins/{plugin_name}/config.yml` (copy from `.example` in plugin folder)
 
 **Standard Format:**
 ```yaml
@@ -472,8 +472,8 @@ variables:
 
 **Books Plugin:**
 ```bash
-cp src/core/plugins/books/config.yml.example src/core/plugins/books/config.yml
-vim src/core/plugins/books/config.yml
+cp src/plugins/books/config.yml.example src/plugins/books/config.yml
+vim src/plugins/books/config.yml
 ```
 
 ```yaml
@@ -485,8 +485,8 @@ variables:
 
 **Movies Plugin:**
 ```bash
-cp src/core/plugins/movies/config.yml.example src/core/plugins/movies/config.yml
-vim src/core/plugins/movies/config.yml
+cp src/plugins/movies/config.yml.example src/plugins/movies/config.yml
+vim src/plugins/movies/config.yml
 ```
 
 ```yaml
@@ -501,8 +501,8 @@ variables:
 
 **Podcasts Plugin:**
 ```bash
-cp src/core/plugins/podcasts/config.yml.example src/core/plugins/podcasts/config.yml
-vim src/core/plugins/podcasts/config.yml
+cp src/plugins/podcasts/config.yml.example src/plugins/podcasts/config.yml
+vim src/plugins/podcasts/config.yml
 ```
 
 ```yaml
@@ -538,7 +538,7 @@ CSV tracker prevents re-processing and allows resuming interrupted workflows.
 
 **1. Create plugin directory:**
 ```bash
-mkdir -p src/core/plugins/weather
+mkdir -p src/plugins/weather
 ```
 
 **2. Create `tasks.py`:**
@@ -559,8 +559,8 @@ def _api_call(location):
    ```python
 """Weather plugin flows."""
 import controlflow as cf
-from src.core.plugins.weather import tasks as weather_tasks
-from src.core.plugins.utilities import tasks as utility_tasks
+from src.plugins.weather import tasks as weather_tasks
+from src.plugins.utilities import tasks as utility_tasks
 
 @cf.flow
 def daily_weather_workflow(**kwargs):
@@ -655,7 +655,7 @@ korben/
 
 ### Plugin-Based Design
 
-**Plugins** (`src/core/plugins/`) - Fully self-contained modules:
+**Plugins** (`src/plugins/`) - Fully self-contained modules:
 ```
 plugins/
 ├── movies/          # Movie discovery (TMDB)
@@ -714,13 +714,13 @@ def extract_wisdom(text):
     )
 ```
 
-**Registry** (`src/core/registry.py`) - Maps names to tasks and flows from plugins:
+**Registry** (`src/registry.py`) - Maps names to tasks and flows from plugins:
 ```python
 # Import from plugins
-from src.core.plugins.movies import tasks as movie_tasks, flows as movie_flows
-from src.core.plugins.podcasts import tasks as podcast_tasks, flows as podcast_flows
-from src.core.plugins.mallory import tasks as mallory_tasks, flows as mallory_flows
-from src.core.plugins.utilities import tasks as utility_tasks
+from src.plugins.movies import tasks as movie_tasks, flows as movie_flows
+from src.plugins.podcasts import tasks as podcast_tasks, flows as podcast_flows
+from src.plugins.mallory import tasks as mallory_tasks, flows as mallory_flows
+from src.plugins.utilities import tasks as utility_tasks
 
 TASKS = {
     "discover_movies": movie_tasks.discover_movies,
@@ -744,7 +744,7 @@ To add a new plugin:
 
 1. **Create plugin directory:**
    ```bash
-   mkdir -p src/core/plugins/my_plugin
+   mkdir -p src/plugins/my_plugin
    ```
 
 2. **Add tasks.py:**

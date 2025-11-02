@@ -1,5 +1,5 @@
 # Slack Plugin Configuration
-# Copy this file to src/core/plugins/slack/config.yml and customize
+# Copy this file to src/plugins/slack/config.yml and customize
 # All variables can be overridden via CLI arguments
 
 # Variables used by send_slack_hook task

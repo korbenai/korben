@@ -4,9 +4,9 @@ import os
 import json
 import logging
 import controlflow as cf
-from src.core.plugins.movies import tasks as movie_tasks
-from src.core.plugins.email import tasks as email_tasks
-from src.core.plugins.movies.lib import TMDBService
+from src.plugins.movies import tasks as movie_tasks
+from src.plugins.email import tasks as email_tasks
+from src.plugins.movies.lib import TMDBService
 from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
 
 # Plugin dependencies

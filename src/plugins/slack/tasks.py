@@ -13,7 +13,7 @@ def send_slack_hook(**kwargs):
     """
     Send message to Slack via webhook.
     
-    Config file: src/core/plugins/slack/config.yml (optional)
+    Config file: src/plugins/slack/config.yml (optional)
     
     Args:
         message: Message text to send

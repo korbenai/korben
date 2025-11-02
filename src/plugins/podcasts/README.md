@@ -26,12 +26,12 @@ podcasts/
 
 ### Configuration File
 
-**Location:** `src/core/plugins/podcasts/config.yml`
+**Location:** `src/plugins/podcasts/config.yml`
 
 ```bash
 # Copy example to create your config
-cp src/core/plugins/podcasts/config.yml.example src/core/plugins/podcasts/config.yml
-vim src/core/plugins/podcasts/config.yml
+cp src/plugins/podcasts/config.yml.example src/plugins/podcasts/config.yml
+vim src/plugins/podcasts/config.yml
 ```
 
 ```yaml

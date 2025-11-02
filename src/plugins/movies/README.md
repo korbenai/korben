@@ -32,12 +32,12 @@ movies/
 
 ### Configuration File (Optional)
 
-**Location:** `src/core/plugins/movies/config.yml`
+**Location:** `src/plugins/movies/config.yml`
 
 ```bash
 # Copy example to create your config
-cp src/core/plugins/movies/config.yml.example src/core/plugins/movies/config.yml
-vim src/core/plugins/movies/config.yml
+cp src/plugins/movies/config.yml.example src/plugins/movies/config.yml
+vim src/plugins/movies/config.yml
 ```
 
 ```yaml

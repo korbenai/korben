@@ -33,12 +33,12 @@ books/
 
 ### Configuration File (Optional)
 
-**Location:** `src/core/plugins/books/config.yml`
+**Location:** `src/plugins/books/config.yml`
 
 ```bash
 # Copy example to create your config
-cp src/core/plugins/books/config.yml.example src/core/plugins/books/config.yml
-vim src/core/plugins/books/config.yml
+cp src/plugins/books/config.yml.example src/plugins/books/config.yml
+vim src/plugins/books/config.yml
 ```
 
 ```yaml

@@ -93,7 +93,7 @@ def load_podcasts_config():
         raise FileNotFoundError(
             f"No config file found at: {config_path}\n"
             f"Please copy config.yml.example to config.yml in the podcasts plugin:\n"
-            f"  cp src/core/plugins/podcasts/config.yml.example src/core/plugins/podcasts/config.yml"
+            f"  cp src/plugins/podcasts/config.yml.example src/plugins/podcasts/config.yml"
         )
     
     with open(config_path, 'r') as file:

@@ -2,7 +2,7 @@
 
 import os
 import logging
-from src.core.plugins.email.lib import send_email as send_email_lib
+from src.plugins.email.lib import send_email as send_email_lib
 from src.lib.core_utils import get_plugin_config, merge_config_with_kwargs
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ def send_email(**kwargs):
     """
     Send an email using Postmark API.
     
-    Config file: src/core/plugins/email/config.yml (optional)
+    Config file: src/plugins/email/config.yml (optional)
     
     Args:
         recipient: Recipient email address (default: from config or PERSONAL_EMAIL env var)

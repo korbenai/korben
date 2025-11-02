@@ -3,7 +3,7 @@
 import logging
 import json
 import datetime
-from src.core.plugins.movies.lib import TMDBService
+from src.plugins.movies.lib import TMDBService
 
 logger = logging.getLogger(__name__)
 

@@ -14,7 +14,7 @@ import logging
 import inspect
 import os
 from pathlib import Path
-from src.core.registry import TASKS, FLOWS
+from src.registry import TASKS, FLOWS
 
 # Configure logging with a clean, readable format
 logging.basicConfig(
@@ -63,9 +63,9 @@ def show_help(name, func, is_flow=False):
                 for key, value in variables.items():
                     print(f"  {key}: {value}")
             
-            print(f"\nConfig file: src/core/plugins/{plugin_name}/config.yml")
-            print(f"Setup: cp src/core/plugins/{plugin_name}/config.yml.example \\")
-            print(f"          src/core/plugins/{plugin_name}/config.yml")
+            print(f"\nConfig file: src/plugins/{plugin_name}/config.yml")
+            print(f"Setup: cp src/plugins/{plugin_name}/config.yml.example \\")
+            print(f"          src/plugins/{plugin_name}/config.yml")
     
     # Show usage example
     print("\n" + "-" * 70)
@@ -100,7 +100,7 @@ def _load_config_example(plugin_name):
     """Load config.yml.example for a plugin if it exists."""
     try:
         import yaml
-        config_path = Path(__file__).parent / 'src' / 'core' / 'plugins' / plugin_name / 'config.yml.example'
+        config_path = Path(__file__).parent / 'src' / 'plugins' / plugin_name / 'config.yml.example'
         if config_path.exists():
             with open(config_path, 'r') as f:
                 return yaml.safe_load(f)

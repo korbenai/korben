@@ -25,10 +25,10 @@ slack/
 
 ### Configuration File (Optional)
 
-**Location:** `src/core/plugins/slack/config.yml`
+**Location:** `src/plugins/slack/config.yml`
 
 ```bash
-cp src/core/plugins/slack/config.yml.example src/core/plugins/slack/config.yml
+cp src/plugins/slack/config.yml.example src/plugins/slack/config.yml
 ```
 
 ```yaml

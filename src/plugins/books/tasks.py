@@ -2,7 +2,7 @@
 
 import logging
 import json
-from src.core.plugins.books.lib import ISBNdbService
+from src.plugins.books.lib import ISBNdbService
 
 logger = logging.getLogger(__name__)
 

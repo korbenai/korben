@@ -2,10 +2,10 @@
 
 import os
 import controlflow as cf
-from src.core.plugins.podcasts import tasks as podcast_tasks
-from src.core.plugins.utilities import tasks as utility_tasks
-from src.core.plugins.email import tasks as email_tasks
-from src.core.plugins.podcasts.lib import get_data_dir, get_tracking_csv, get_podcast_status, update_podcast_status
+from src.plugins.podcasts import tasks as podcast_tasks
+from src.plugins.utilities import tasks as utility_tasks
+from src.plugins.email import tasks as email_tasks
+from src.plugins.podcasts.lib import get_data_dir, get_tracking_csv, get_podcast_status, update_podcast_status
 
 # Plugin dependencies
 __dependencies__ = ['email', 'utilities']

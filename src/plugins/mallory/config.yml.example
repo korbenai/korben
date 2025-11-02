@@ -1,5 +1,5 @@
 # Mallory Plugin Configuration
-# Copy this file to src/core/plugins/mallory/config.yml and customize
+# Copy this file to src/plugins/mallory/config.yml and customize
 # All variables can be overridden via CLI arguments
 
 # Variables used by mallory_stories flow
