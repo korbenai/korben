@@ -1,0 +1,20 @@
+# Example Linear configuration
+# Copy this file to config.yml in the same directory and customize
+
+# Linear API key (can also be set via LINEAR_API_KEY environment variable)
+# Get your API key from: https://linear.app/settings/api
+api_key: ""
+
+# Username to query tickets for (displayName, name, or email prefix)
+# This is typically your Linear username or email
+username: "user"
+
+# Comma-separated list of status names to fetch
+# Common statuses: Todo, In Progress, In Review, Done, Canceled, Backlog
+statuses: "In Progress,Todo"
+
+# Optional: Specific teams to filter by (comma-separated team names or IDs)
+# teams: "Engineering,Product"
+
+# Optional: Include archived issues (default: false)
+# include_archived: false
