@@ -1,0 +1,9 @@
+# Example Share File configuration
+# Copy this file to config.yml in the same directory and customize
+
+# Default expiration time for shared files (in days)
+# default_expiration: 3
+
+# Optional: Default AWS region (can also be set via AWS_REGION environment variable)
+# region: "us-east-2"
+

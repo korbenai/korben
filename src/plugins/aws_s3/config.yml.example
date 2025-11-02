@@ -1,0 +1,14 @@
+# Example AWS S3 configuration
+# Copy this file to config.yml in the same directory and customize
+
+# AWS credentials should be set via environment variables or AWS CLI configuration
+# AWS_ACCESS_KEY_ID
+# AWS_SECRET_ACCESS_KEY
+# AWS_REGION (default: us-east-2)
+
+# Optional: Default bucket configuration
+# default_bucket: "my-bucket-name"
+
+# Optional: Default region (can also be set via AWS_REGION environment variable)
+# region: "us-east-2"
+
