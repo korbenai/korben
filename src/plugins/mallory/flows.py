@@ -13,7 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 @cf.flow
-def mallory_trending_stories_workflow(**kwargs):
+def mallory_trending_stories_workflow(
+    limit: int | None = None,
+    recipient: str | None = None,
+    subject: str | None = None,
+    slack_hook: str | None = None,
+):
     """
     ControlFlow flow for fetching Mallory security stories and emailing them.
     
@@ -34,6 +39,16 @@ def mallory_trending_stories_workflow(**kwargs):
     Returns:
         str: Status message
     """
+    # Convert explicit parameters to kwargs for config merging
+    kwargs = {
+        'limit': limit,
+        'recipient': recipient,
+        'subject': subject,
+        'slack_hook': slack_hook,
+    }
+    # Remove None values
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    
     # Load plugin config and merge with kwargs (kwargs take precedence)
     config = get_plugin_config('mallory')
     params = merge_config_with_kwargs(config, kwargs)

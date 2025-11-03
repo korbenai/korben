@@ -36,7 +36,14 @@ logger = logging.getLogger(__name__)
 
 
 @cf.flow  
-def linear_status_report_workflow(**kwargs):
+def linear_status_report_workflow(
+    username: str | None = None,
+    statuses: str | None = None,
+    send_email: bool = False,
+    email_recipient: str | None = None,
+    send_slack: bool = False,
+    hook_name: str | None = None,
+):
     """
     ControlFlow flow for generating a daily Linear ticket report.
     
@@ -54,6 +61,18 @@ def linear_status_report_workflow(**kwargs):
     Returns:
         str: Summary of report generation
     """
+    # Convert explicit parameters to kwargs
+    kwargs = {
+        'username': username,
+        'statuses': statuses,
+        'send_email': send_email,
+        'email_recipient': email_recipient,
+        'send_slack': send_slack,
+        'hook_name': hook_name,
+    }
+    # Remove None values (but keep False for booleans)
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    
     logger.info("Starting Linear status report workflow...")
     
     results = []
