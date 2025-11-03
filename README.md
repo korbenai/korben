@@ -31,6 +31,9 @@ Out of the box capabilities:
 - **Books Discovery** - Find and recommend books:
   - `search_books` - Search ISBNdb for books by query, subject, or author
   - `get_book_details` - Get detailed information about a specific book by ISBN
+- **arXiv Research** - Search academic papers (no API key required):
+  - `arxiv_search` - Search arXiv.org for papers by query, title, author, or category
+  - `arxiv_search` (flow) - Search and send results via email and Slack
 - **GitHub Integration** - Create and share gists:
   - `create_gist_from_file` - Create a GitHub gist from a single file
   - `create_gist_from_directory` - Create a gist from all files in a directory
@@ -55,6 +58,7 @@ Korben uses an **auto-discovery plugin system** - plugins are automatically regi
 src/plugins/
 ├── movies/          # TMDB movie discovery and recommendations
 ├── books/           # ISBNdb book search and recommendations
+├── arxiv/           # arXiv academic paper search (free, no API key)
 ├── podcasts/        # Podcast download, transcribe, wisdom extraction
 ├── mallory/         # Cybersecurity news from Mallory API
 ├── github/          # Create and share GitHub gists
@@ -242,6 +246,10 @@ pdm run python3 ./korben.py --task discover_movies --genres "28,878" --min_ratin
 pdm run python3 ./korben.py --flow trending_movies
 pdm run python3 ./korben.py --flow trending_movies --genres "sci-fi,action,thriller"
 
+# Search arXiv for academic papers (no API key required!)
+pdm run python3 ./korben.py --task arxiv_search --query "all:transformer"
+pdm run python3 ./korben.py --flow arxiv_search --query "ti:neural architecture" --max_results 5
+
 # Create GitHub gists for sharing code
 pdm run python3 ./korben.py --task create_gist_from_file --file_path /path/to/script.py --description "My script"
 pdm run python3 ./korben.py --task create_gist_from_directory --directory_path /path/to/project --description "Project files"
@@ -404,6 +412,87 @@ pdm run python3 ./korben.py --task get_book_details --isbn "9780262046244"
 - `limit` - Maximum books to return (default: 50)
 
 **Output:** JSON with book details including title, authors, publisher, ISBN, and synopsis.
+
+### arXiv Research Flow
+
+**Search academic papers** on arXiv.org - completely free, no API key required!
+
+**Complete workflow** - `--flow arxiv_search`:  
+Searches arXiv for academic papers and sends beautifully formatted results via email and Slack.
+
+**Flow steps:**
+1. `arxiv_search` - Searches arXiv API with your query
+2. Formats papers into HTML email with titles, authors, abstracts, categories, and PDF links
+3. `send_email` - Sends formatted email
+4. Formats papers for Slack with clickable links
+5. `send_slack_hook` - Posts to Slack
+
+**Environment Variables:**
+- `PERSONAL_EMAIL` - Your email (default recipient)
+- `POSTMARK_API_KEY` - Postmark API key (required for flow)
+- `SLACK_WEBHOOK_URL` - Slack webhook URL (required for flow)
+
+**Query Syntax:**
+- `all:quantum` - Search all fields
+- `ti:transformer` - Search titles
+- `au:lecun` - Search authors
+- `abs:neural` - Search abstracts
+- `cat:cs.AI` - Search by category
+- `ti:attention AND au:vaswani` - Combined queries
+
+**Popular Categories:**
+- `cs.AI` - Artificial Intelligence
+- `cs.LG` - Machine Learning
+- `cs.CL` - Computation and Language
+- `cs.CV` - Computer Vision
+- `stat.ML` - Machine Learning (Statistics)
+
+**Usage:**
+```bash
+# Search and notify (complete flow)
+pdm run python3 ./korben.py --flow arxiv_search \
+  --query "all:large language models" \
+  --max_results 5
+
+# Search by title
+pdm run python3 ./korben.py --flow arxiv_search \
+  --query "ti:transformer attention" \
+  --max_results 10
+
+# Search by author
+pdm run python3 ./korben.py --flow arxiv_search \
+  --query "au:hinton" \
+  --max_results 5
+
+# Search by category
+pdm run python3 ./korben.py --flow arxiv_search \
+  --query "cat:cs.AI" \
+  --sort_by "submittedDate" \
+  --max_results 10
+
+# Combined search
+pdm run python3 ./korben.py --flow arxiv_search \
+  --query "ti:neural architecture AND cat:cs.LG" \
+  --max_results 5
+
+# Just search papers (no email/Slack, returns JSON)
+pdm run python3 ./korben.py --task arxiv_search \
+  --query "all:quantum computing" \
+  --max_results 10
+```
+
+**Parameters:**
+- `query` - Search query (required) - use arXiv query syntax
+- `max_results` - Maximum papers to return (default: 10)
+- `start` - Starting index for pagination (default: 0)
+- `sort_by` - Sort by 'relevance', 'lastUpdatedDate', or 'submittedDate' (default: 'relevance')
+- `sort_order` - 'ascending' or 'descending' (default: 'descending')
+- `recipient` - Email recipient (optional, falls back to PERSONAL_EMAIL)
+- `hook_name` - Slack webhook name (optional, defaults to 'default')
+
+**Output:** 
+- Task: JSON with paper details (titles, authors, abstracts, PDF links, categories)
+- Flow: Formatted email + Slack message with clickable paper links
 
 ### GitHub Plugin
 

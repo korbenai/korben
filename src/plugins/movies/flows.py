@@ -102,7 +102,15 @@ def _format_movie_email(movies: list, genre_names: list) -> str:
 
 
 @cf.flow
-def trending_movies_workflow(**kwargs):
+def trending_movies_workflow(
+    genres: str | None = None,
+    min_rating: float | None = None,
+    min_votes: int | None = None,
+    years_back: int | None = None,
+    start_year: int | None = None,
+    limit: int | None = None,
+    recipient: str | None = None,
+):
     """
     ControlFlow flow for discovering trending movies and sending via email.
     
@@ -121,6 +129,19 @@ def trending_movies_workflow(**kwargs):
         Status message
     """
     import datetime
+    
+    # Convert explicit parameters to kwargs for config merging
+    kwargs = {
+        'genres': genres,
+        'min_rating': min_rating,
+        'min_votes': min_votes,
+        'years_back': years_back,
+        'start_year': start_year,
+        'limit': limit,
+        'recipient': recipient,
+    }
+    # Remove None values
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
     
     # Load plugin config and merge with kwargs (kwargs take precedence)
     config = get_plugin_config('movies')

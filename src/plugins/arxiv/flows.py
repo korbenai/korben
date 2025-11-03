@@ -151,7 +151,15 @@ def _format_papers_slack(papers: list, query: str) -> str:
 
 
 @cf.flow
-def arxiv_search_workflow(**kwargs):
+def arxiv_search_workflow(
+    query: str | None = None,
+    max_results: int | None = None,
+    start: int | None = None,
+    sort_by: str | None = None,
+    sort_order: str | None = None,
+    recipient: str | None = None,
+    hook_name: str | None = None,
+):
     """
     Search for papers on arXiv and send results via email and Slack.
     
@@ -170,12 +178,25 @@ def arxiv_search_workflow(**kwargs):
     Returns:
         Status message
     """
+    # Convert explicit parameters to kwargs for config merging
+    kwargs = {
+        'query': query,
+        'max_results': max_results,
+        'start': start,
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+        'recipient': recipient,
+        'hook_name': hook_name,
+    }
+    # Remove None values
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    
     # Load plugin config and merge with kwargs
     config = get_plugin_config('arxiv')
     params = merge_config_with_kwargs(config, kwargs)
     config_vars = config.get('variables', {})
     
-    # Extract parameters
+    # Extract parameters with defaults
     query = params.get('query')
     max_results = params.get('max_results') or config_vars.get('max_results', 10)
     start = params.get('start') or config_vars.get('start', 0)

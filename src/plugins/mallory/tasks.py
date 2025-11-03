@@ -35,7 +35,7 @@ def fetch_mallory_stories(**kwargs):
         raise ValueError("MALLORY_API_KEY environment variable is not set")
     
     # Set up the API request
-    url = "https://api.mallory.ai/stories"
+    url = "https://api.mallory.ai/v1/stories"
     headers = {"Authorization": f"Bearer {api_key}"}
     
     # Number of stories to fetch from config or kwargs

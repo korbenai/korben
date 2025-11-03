@@ -1,112 +1,66 @@
-# Prefect Cloud Deployments
+# Deployments (Prefect 3)
 
-Scripts for deploying workflows to Prefect Cloud.
+Minimal guide to deploy, run, and monitor Korben flows with Prefect Cloud.
 
-## Setup
-
-### 1. Install Prefect
+## Prerequisites
 
 ```bash
-pdm install  # Installs prefect dependency
+pdm install                   # installs dependencies into .venv
+prefect cloud login           # authenticate to Prefect Cloud
+prefect work-pool create default-pool --type process   # once per workspace
 ```
 
-### 2. Login to Prefect Cloud
+## Deploy
 
 ```bash
-prefect cloud login
+# Deploy all flows with default schedules (6am CT, weekly where noted)
+.venv/bin/python deployments/cloud_all.py
+
+# Deploy a single flow
+.venv/bin/python deployments/cloud_all.py --flow mallory
+
+# Override schedule
+.venv/bin/python deployments/cloud_all.py --schedule "0 8 * * *" --timezone "America/Los_Angeles"
+
+# No schedules (manual only)
+.venv/bin/python deployments/cloud_all.py --no-schedule
 ```
 
-Follow the prompts to authenticate with your Prefect Cloud account (free tier available).
+Notes:
+- Deployments set `working_dir` and `PYTHONPATH` so code loads correctly on the worker.
+- Work pool: `default-pool`; work queue: `default`.
 
-### 3. Create Work Pool
+## Run
+
+Start a worker on the machine that should execute flows:
 
 ```bash
-prefect work-pool create default-pool --type process
+# Recommended: verbose logs while testing
+PREFECT_LOGGING_LEVEL=DEBUG .venv/bin/prefect worker start --pool default-pool
 ```
 
-## Deploy Workflow
-
-### Deploy to Prefect Cloud
+Trigger runs:
 
 ```bash
-python deployments/prefect_cloud.py
+# From the Prefect UI: open the deployment → Quick run
+
+# Or via CLI
+.venv/bin/prefect deployment run 'mallory-trending-stories-workflow/default'
 ```
-
-This pushes the podcast workflow metadata to Prefect Cloud with:
-- Daily schedule (6:00 AM PST)
-- Tags for organization
-- Work pool assignment
-
-### Start Worker
-
-On the machine where you want to run the workflow:
-
-```bash
-prefect worker start --pool default-pool
-```
-
-The worker:
-- Connects to Prefect Cloud
-- Pulls scheduled runs
-- Executes using your local code
-- Reports status back to cloud
-
-### Trigger Manual Run
-
-```bash
-# Via CLI
-prefect deployment run 'podcasts-workflow/daily-podcasts'
-
-# Or use Prefect Cloud UI
-# Visit https://app.prefect.cloud
-```
-
-## Run Locally (Without Prefect)
-
-If you want to run without Prefect orchestration:
-
-```bash
-# Option 1: Using run.py
-pdm run python3 ./run.py --flow podcasts
-
-# Option 2: Direct execution
-python deployments/run_local.py
-```
-
-## Configuration
-
-Worker configuration is defined in `config/workers.py`:
-- Work pool definitions
-- Task-to-worker mappings
-- Tags for routing
-- Retry policies
-
-Currently all tasks use the `default` pool. In the future, you can:
-- Add GPU worker pool for transcription
-- Add specialized workers for different tasks
-- Update `config/workers.py` to route tasks accordingly
-
-## Monitoring
-
-View workflow runs in Prefect Cloud:
-1. Visit https://app.prefect.cloud
-2. Navigate to Flows → podcasts-workflow
-3. View run history, logs, and schedules
 
 ## Troubleshooting
 
-### Worker not picking up runs
-- Ensure worker is started: `prefect worker start --pool default-pool`
-- Check worker is connected in Prefect Cloud UI
-- Verify work pool name matches deployment
+- Run is Pending
+  - Ensure a worker is online in `default-pool` and same workspace/profile
+  - Use the scheduled deployment’s Quick run (creates a run at now)
+  - Check worker logs: `/tmp/prefect-worker.log` or run with `PREFECT_LOGGING_LEVEL=DEBUG`
 
-### Runs failing
-- Check logs in Prefect Cloud UI
-- Verify environment variables are set (`PERSONAL_EMAIL`, `POSTMARK_API_KEY`)
-- Ensure `config/podcasts.yml` exists
+- Import/path errors
+  - Redeploy; deployments set `job_variables.working_dir` and `env.PYTHONPATH`
 
-### No runs scheduled
-- Check deployment schedule in Prefect Cloud UI
-- Verify timezone is correct
-- Manually trigger a test run first
+- Env vars
+  - The worker must inherit any required API keys (e.g., via your shell profile)
 
+## Monitoring
+
+Prefect Cloud: https://app.prefect.cloud — view deployments, runs, logs, and schedules.

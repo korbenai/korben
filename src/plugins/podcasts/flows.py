@@ -59,8 +59,7 @@ def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipi
 
 
 @cf.flow
-def process_podcasts_workflow(**kwargs):
-
+def process_podcasts_workflow(recipient: str | None = None):
     """
     ControlFlow flow for downloading, transcribing, and extracting wisdom from podcasts.
     
@@ -76,6 +75,11 @@ def process_podcasts_workflow(**kwargs):
     """
     import logging
     logger = logging.getLogger(__name__)
+    
+    # Convert explicit parameters to kwargs
+    kwargs = {}
+    if recipient is not None:
+        kwargs['recipient'] = recipient
     
     results = []
     
