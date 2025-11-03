@@ -228,4 +228,4 @@ tmp/
 src/plugins/*/config.yml
 
 # linear plugin - ticket data 
-data/linear/tickets.json
+data/linear/tickets.jsonconfig.yml
