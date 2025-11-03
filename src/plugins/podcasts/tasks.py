@@ -8,6 +8,7 @@ import logging
 from datetime import datetime, timedelta
 import requests
 import getpodcast
+from lxml import etree
 from src.plugins.podcasts.lib import (
     get_data_dir, init_tracking, load_podcasts_config,
     get_podcast_status, update_podcast_status, transcribe_with_whisper
@@ -28,20 +29,22 @@ def download_podcasts(**kwargs):
     
     # Initialize tracking
     init_tracking()
-    
-    # Get data directory from core config
+    # Get data directory from config, allow override via config variables.downloads_dir
+    config = load_podcasts_config()
+    variables = config.get('variables', {})
+    downloads_subdir = variables.get('downloads_dir', os.path.join('podcasts', 'downloads'))
+
     data_dir = get_data_dir()
-    PODCASTS_PATH = os.path.join(data_dir, 'podcasts', 'downloads')
-    
+    PODCASTS_PATH = os.path.join(data_dir, downloads_subdir)
+
     # Check if the directory exists
     if not os.path.isdir(PODCASTS_PATH):
         logger.info(f"Creating downloads directory: {PODCASTS_PATH}")
         os.makedirs(PODCASTS_PATH, exist_ok=True)
-    
-    # Load configuration
-    config = load_podcasts_config()
+    # Load configuration (feeds and variables)
+    # Note: variables hold operational knobs like days_back, downloads_dir, recipient
     podcasts = config.get('podcasts', {})
-    days_back = config.get('days_back', 7)
+    days_back = variables.get('days_back', 7)
     
     # Calculate the correct date 
     date_from = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%d')
@@ -72,11 +75,23 @@ def download_podcasts(**kwargs):
             os.makedirs(podcast_dir, exist_ok=True)
             
             # Download episodes
-            episodes = getpodcast.get_episodes(
-                feed_url,
-                start_date=date_from,
-                end_date=today
-            )
+            resolved_url = _resolve_feed_url(feed_url)
+            if resolved_url != feed_url:
+                logger.info(f"  Resolved feed URL: {resolved_url}")
+            try:
+                # Preferred path if library provides helper
+                episodes = getpodcast.get_episodes(
+                    resolved_url,
+                    start_date=date_from,
+                    end_date=today
+                )
+            except AttributeError:
+                # Fallback: parse RSS directly (getpodcast API not available)
+                episodes = _fetch_episodes_via_rss(
+                    resolved_url,
+                    start_date=date_from,
+                    end_date=today,
+                )
             
             if not episodes:
                 logger.info(f"  No new episodes found")
@@ -101,9 +116,8 @@ def download_podcasts(**kwargs):
                 filename = re.sub(r'[-\s]+', '-', filename)
                 output_path = os.path.join(year_dir, f"{filename}.mp3")
                 
-                # Check if already downloaded
-                status = get_podcast_status(output_path)
-                if status and status.get('downloaded') == 'true':
+                # Check if already downloaded (use file existence)
+                if os.path.exists(output_path):
                     logger.info(f"  ⏭  Skip (exists): {episode['title']}")
                     total_skipped += 1
                     continue
@@ -118,8 +132,8 @@ def download_podcasts(**kwargs):
                         for chunk in response.iter_content(chunk_size=8192):
                             f.write(chunk)
                     
-                    # Update tracking
-                    update_podcast_status(output_path, downloaded=True)
+                    # Optionally record row (no downloaded flag in tracker)
+                    update_podcast_status(output_path)
                     total_new += 1
                     logger.info(f"  ✅ Downloaded: {os.path.basename(output_path)}")
                     
@@ -195,12 +209,19 @@ def transcribe_podcasts(**kwargs):
         # Transcribe
         logger.info(f"🎙️  Transcribing: {os.path.basename(mp3_file)}")
         try:
-            transcribe_with_whisper(mp3_file, transcript_path, model=model, language=language)
+            output_dir = os.path.dirname(transcript_path)
+            actual_path = transcribe_with_whisper(
+                audio_file=mp3_file,
+                model=model,
+                language=language,
+                output_format=output_format,
+                output_dir=output_dir,
+            )
             
             # Update tracking
-            update_podcast_status(mp3_file, transcribed=True, transcribed_file=transcript_path)
+            update_podcast_status(mp3_file, transcribed_file=actual_path)
             transcribed_count += 1
-            logger.info(f"  ✅ Transcript saved: {transcript_filename}")
+            logger.info(f"  ✅ Transcript saved: {os.path.basename(actual_path)}")
             
         except Exception as e:
             logger.error(f"  ❌ Transcription failed: {e}")
@@ -209,4 +230,120 @@ def transcribe_podcasts(**kwargs):
     result = f"Transcribed {transcribed_count} podcast(s), skipped {skipped_count} already transcribed"
     logger.info(f"\n{result}")
     return result
+
+
+def _fetch_episodes_via_rss(feed_url: str, start_date: str, end_date: str):
+    """Fallback RSS fetch when getpodcast.get_episodes is unavailable.
+    Returns list of dicts with keys: title, url, date (YYYY-MM-DD).
+    """
+    try:
+        resp = requests.get(feed_url, timeout=30)
+        resp.raise_for_status()
+    except Exception as e:
+        logger.error(f"  ❌ Failed to fetch RSS: {e}")
+        return []
+
+    try:
+        root = etree.fromstring(resp.content)
+    except Exception as e:
+        logger.error(f"  ❌ Failed to parse RSS XML: {e}")
+        return []
+
+    ns = {
+        'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
+        'media': 'http://search.yahoo.com/mrss/'
+    }
+
+    def _text(elem):
+        return elem.text.strip() if elem is not None and elem.text else ""
+
+    def _date_to_str(dt):
+        try:
+            return dt.strftime('%Y-%m-%d')
+        except Exception:
+            return ''
+
+    def _parse_pubdate(pubtext):
+        # Try common RSS date formats
+        from email.utils import parsedate_to_datetime
+        try:
+            dt = parsedate_to_datetime(pubtext)
+            return _date_to_str(dt)
+        except Exception:
+            return ''
+
+    from_dt = datetime.strptime(start_date, '%Y-%m-%d')
+    to_dt = datetime.strptime(end_date, '%Y-%m-%d')
+
+    items = root.findall('.//item')
+    results = []
+    for it in items:
+        title = _text(it.find('title'))
+        pubtext = _text(it.find('pubDate'))
+        date_str = _parse_pubdate(pubtext) if pubtext else ''
+        try:
+            dt = datetime.strptime(date_str, '%Y-%m-%d') if date_str else None
+        except Exception:
+            dt = None
+
+        if dt is None or dt < from_dt or dt > to_dt:
+            continue
+
+        # Prefer enclosure url, then media:content
+        url = ''
+        enclosure = it.find('enclosure')
+        if enclosure is not None and enclosure.get('url'):
+            url = enclosure.get('url')
+        if not url:
+            media_content = it.find('media:content', namespaces=ns)
+            if media_content is not None and media_content.get('url'):
+                url = media_content.get('url')
+
+        if not url:
+            continue
+
+        results.append({
+            'title': title or 'episode',
+            'url': url,
+            'date': date_str or start_date,
+        })
+
+    return results
+
+
+def _resolve_feed_url(feed_url: str) -> str:
+    """Resolve human-facing podcast URLs (e.g., Apple Podcasts) to RSS feed URLs.
+    Returns the original URL if no resolution is needed or fails.
+    """
+    try:
+        if 'podcasts.apple.com' in feed_url:
+            # Extract Apple Podcast ID like .../id1499392701
+            import re
+            m = re.search(r'id(\d+)', feed_url)
+            if not m:
+                return feed_url
+            itunes_id = m.group(1)
+            # Prefer explicit country/entity to improve result consistency
+            lookup_url = (
+                f"https://itunes.apple.com/lookup?id={itunes_id}"
+                f"&country=us&entity=podcast"
+            )
+            resp = requests.get(lookup_url, timeout=15)
+            resp.raise_for_status()
+            data = resp.json()
+            results = data.get('results') or []
+            if results and 'feedUrl' in results[0]:
+                return results[0]['feedUrl']
+            # Fallback: retry without entity (some regions)
+            lookup_url2 = f"https://itunes.apple.com/lookup?id={itunes_id}&country=us"
+            resp2 = requests.get(lookup_url2, timeout=15)
+            resp2.raise_for_status()
+            data2 = resp2.json()
+            results2 = data2.get('results') or []
+            if results2 and 'feedUrl' in results2[0]:
+                return results2[0]['feedUrl']
+        return feed_url
+    except Exception as e:
+        logger.debug(f"Feed URL resolution failed for {feed_url}: {e}")
+        return feed_url
 
