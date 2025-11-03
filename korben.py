@@ -137,12 +137,20 @@ def main():
     # Parse known args and keep the rest as kwargs
     args, unknown = parser.parse_known_args()
     
-    # Convert unknown args to kwargs
+    # Convert unknown args to kwargs (supports --key value and --key=value)
     kwargs = {}
     i = 0
     while i < len(unknown):
-        if unknown[i].startswith('--'):
-            key = unknown[i][2:]  # Remove --
+        token = unknown[i]
+        if token.startswith('--'):
+            # Handle --key=value
+            if '=' in token:
+                key, value = token[2:].split('=', 1)
+                kwargs[key] = value
+                i += 1
+                continue
+            # Handle --key value or standalone flags
+            key = token[2:]
             if i + 1 < len(unknown) and not unknown[i + 1].startswith('--'):
                 kwargs[key] = unknown[i + 1]
                 i += 2
@@ -151,6 +159,13 @@ def main():
                 i += 1
         else:
             i += 1
+
+    # Normalize boolean-like strings to actual booleans
+    for k, v in list(kwargs.items()):
+        if isinstance(v, str):
+            lower = v.lower()
+            if lower in ('true', 'false'):
+                kwargs[k] = (lower == 'true')
     
     # Show general help if no task/flow specified
     if args.help and not args.task and not args.flow:
