@@ -16,32 +16,24 @@ Hackable personal automation framework built on ControlFlow and Prefect. Batteri
 - AWS S3: buckets and file operations
 - Share File: quick public links via temporary S3 buckets
 
-## Simple CLI (recommended)
-
-Use the korben.sh launcher as the primary entrypoint. It responds in `--mode local` by default, so no need to specify it. 
+## Getting Started
 
 ```bash
-# List available tasks and flows
+# 1) Install dependencies
+pdm install
+
+# 2) List available tasks and flows
 ./korben.sh --list
 
-# Run flows locally
+# 3) Run an individual task
+./korben.sh --task send_email --subject "Your subject here" --content "Your content here" --email user@mail.com
+
+# 4) Run a mult-step flow locally,.. this will: 
+#  i) fetch cybersecurity stories from mallory.ai, 
+#  ii) analyze them with an ai agent, 
+#  iii) and email / slack them to configured addresses
 ./korben.sh --flow mallory_trending_stories --limit 10
-./korben.sh --flow arxiv_search --query "cat:cs.AI" --max_results 5
-./korben.sh --flow trending_movies --genres "sci-fi,action"
 ```
-
-If you want to run with prefect cloud, you'll want to start a worker, you can use the korben.sh launcher to do this as well. 
-
-```bash
-# Start a Prefect worker (so Prefect Cloud Quick run works immediately)
-./korben.sh --mode worker            # uses default-pool
-# Or choose a different work pool
-./korben.sh --mode worker --pool my-pool
-```
-
-Notes:
-- `--` separates launcher flags from arguments passed to `korben.py`.
-- The worker keeps a Prefect process worker online to run scheduled/Quick runs.
 
 ## Plugin Docs
 
@@ -59,6 +51,17 @@ Notes:
 - Slack: `src/plugins/slack/README.md`
 - Utilities: `src/plugins/utilities/README.md`
 
-## Deployments (Prefect)
+## Cloud Deployments (Optional, powered by Prefect)
+
+If you want to run with prefect cloud, you'll want to start a worker, you can use the korben.sh launcher to do this as well. 
 
 See `deployments/README.md` for deploying, running workers, and using Prefect Cloud Quick run.
+
+The worker keeps a worker online to run scheduled/Quick runs for cloud 
+
+```bash
+# Start a Prefect worker (so Prefect Cloud Quick run works immediately)
+./korben.sh --mode worker            # uses default-pool
+# Or choose a different work pool
+./korben.sh --mode worker --pool my-pool
+```
