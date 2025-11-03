@@ -195,3 +195,4 @@ class GoogleCalendarService:
             "html_link": event.get("htmlLink", ""),
         }
 
+

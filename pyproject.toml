@@ -11,12 +11,13 @@ dependencies = [
     "requests",
     "getpodcast",
     "pyyaml",
-    "openai-whisper",
     "lxml",
     "markdown",
     "google-api-python-client",
     "google-auth",
     "boto3",
+    "torch<3.0,>=2.3",
+    "openai-whisper>=20250625",
 ]
 requires-python = ">=3.13"
 readme = "README.md"
