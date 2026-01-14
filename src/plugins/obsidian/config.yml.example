@@ -1,0 +1,20 @@
+# Obsidian Plugin Configuration
+# Copy this file to config.yml and customize
+
+variables:
+  # Path to your Obsidian wiki/vault (required)
+  # Examples:
+  #   ~/Documents/MyVault
+  #   /Users/username/Obsidian/Work
+  wiki_path: ~/Documents/ObsidianVault
+  
+  # Subdirectory containing daily notes (relative to wiki_path)
+  daily_notes_subdir: daily
+  
+  # Backlog file name (relative to wiki_path)
+  # Use quotes if filename starts with special characters
+  backlog_file: "!backlog.md"
+  
+  # Email recipient for daily summary (optional)
+  # Falls back to PERSONAL_EMAIL env var or email plugin config
+  recipient: null

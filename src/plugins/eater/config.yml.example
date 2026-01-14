@@ -1,0 +1,13 @@
+variables:
+  # 1) City + State (users typically only change these):
+  city: "Austin"
+  state: "Texas"
+
+  # 2) Additional focus areas (optional list of bullet points):
+  #additional_focus_areas:
+  #  - "Prioritize East {city} when possible, but do not limit to only East {city} if better options exist elsewhere."
+
+  # 3) Email settings for restaurant newsletter
+  #recipient: ""  # Email address to send newsletter to (or set PERSONAL_EMAIL env var)
+  
+

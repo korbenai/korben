@@ -80,6 +80,17 @@ FLOW_CONFIGS = {
         },
         "description": "Generate and email Linear status report"
     },
+    "eater": {
+        "module": "src.plugins.eater.flows",
+        "function": "eater_restaurant_scout_workflow",
+        "tags": ["eater", "restaurants", "weekly"],
+        "parameters": {},
+        "schedule": {
+            "cron": "0 9 * * 1",  # Weekly on Mondays at 9am CT
+            "timezone": "America/Chicago"
+        },
+        "description": "Find new restaurants and send weekly newsletter"
+    },
 }
 
 

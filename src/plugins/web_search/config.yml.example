@@ -1,0 +1,10 @@
+variables:
+  # Tavily API key. You can also set the environment variable TAVILY_API_KEY.
+  # If both are set, the config value here takes precedence.
+  # api_key: "YOUR_TAVILY_API_KEY"
+  # Default maximum number of results to return
+  max_results: 10
+  # 'basic' is faster; 'advanced' is deeper and slower
+  search_depth: "basic"
+
+ 

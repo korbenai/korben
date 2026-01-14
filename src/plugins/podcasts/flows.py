@@ -1,7 +1,6 @@
 """Podcasts flows - complete podcast processing workflow."""
 
 import os
-import controlflow as cf
 from src.plugins.podcasts import tasks as podcast_tasks
 from src.plugins.utilities import tasks as utility_tasks
 from src.plugins.email import tasks as email_tasks
@@ -11,7 +10,6 @@ from src.plugins.podcasts.lib import get_data_dir, get_tracking_csv, get_podcast
 __dependencies__ = ['email', 'utilities']
 
 
-@cf.flow
 def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipient_email=None):
     """
     Process a single transcript: read → extract wisdom → write → convert to HTML → email.
@@ -58,10 +56,9 @@ def _process_single_transcript(transcript_path, podcast_file, wisdom_dir, recipi
     return wisdom_file
 
 
-@cf.flow
 def process_podcasts_workflow(recipient: str | None = None):
     """
-    ControlFlow flow for downloading, transcribing, and extracting wisdom from podcasts.
+    Workflow for downloading, transcribing, and extracting wisdom from podcasts.
     
     Runs tasks in sequence:
     1. Download podcasts from feeds

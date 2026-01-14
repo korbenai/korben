@@ -30,7 +30,7 @@ TASK_WORKER_CONFIG = {
     },
     "extract_wisdom": {
         "pool": "default",
-        "tags": ["ai", "controlflow"],
+        "tags": ["ai", "claude-sdk"],
         "retries": 2,
     },
     "send_email": {

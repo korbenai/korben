@@ -1,0 +1,27 @@
+# Korben configuration
+# Copy korben.yml.example to korben.yml and customize
+
+# Data directory for all task data
+data_dir: "data"
+
+# Temporary directory for ephemeral files
+tmp_dir: "tmp"
+
+# AI Agent name
+agent_name: "Korben"
+
+# LLM Configuration
+llm:
+  # Provider: "openai" or "anthropic"
+  provider: "openai"
+  
+  # Model settings per provider
+  openai:
+    model: "gpt-4o"
+    temperature: 0.7
+    max_tokens: 4096
+  
+  anthropic:
+    model: "claude-sonnet-4-20250514"
+    temperature: 0.7
+    max_tokens: 4096

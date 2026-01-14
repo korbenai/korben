@@ -2,7 +2,6 @@
 
 import json
 import logging
-import controlflow as cf
 from src.plugins.arxiv import tasks as arxiv_tasks
 from src.plugins.email import tasks as email_tasks
 from src.plugins.slack import tasks as slack_tasks
@@ -150,7 +149,6 @@ def _format_papers_slack(papers: list, query: str) -> str:
     return message
 
 
-@cf.flow
 def arxiv_search_workflow(
     query: str | None = None,
     max_results: int | None = None,

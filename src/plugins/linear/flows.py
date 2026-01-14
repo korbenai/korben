@@ -3,7 +3,6 @@
 import os
 import json
 import logging
-import controlflow as cf
 from src.plugins.linear import tasks as linear_tasks
 
 logger = logging.getLogger(__name__)
@@ -35,7 +34,6 @@ logger = logging.getLogger(__name__)
 #     return result
 
 
-@cf.flow  
 def linear_status_report_workflow(
     username: str | None = None,
     statuses: str | None = None,

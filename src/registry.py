@@ -15,14 +15,13 @@ PLUGIN_DEPENDENCIES: Dict[str, List[str]] = {}  # Track plugin dependencies
 DISABLED_PLUGINS: Set[str] = set()  # Track disabled plugins
 
 
-def is_controlflow_decorated(func):
-    """Check if a function is decorated with @cf.flow."""
-    try:
-        import controlflow as cf
-        # Check if function has controlflow flow wrapper
-        return hasattr(func, '__wrapped__') or 'controlflow' in str(type(func))
-    except:
-        return False
+def is_flow_function(func):
+    """Check if a function is a flow function.
+    
+    Now that we've migrated away from @cf.flow decorators,
+    all public functions in flows.py are considered flows.
+    """
+    return callable(func)
 
 
 def _extract_dependencies(module) -> List[str]:
@@ -141,7 +140,7 @@ def discover_and_register_plugins():
                 if callable(obj) and not name.startswith('_'):
                     # Only register functions defined in this module
                     if hasattr(obj, '__module__') and flows_module.__name__ in str(obj.__module__):
-                        if inspect.isfunction(obj) or is_controlflow_decorated(obj):
+                        if inspect.isfunction(obj) or is_flow_function(obj):
                             # Use a clean name (remove _workflow suffix for cleaner CLI)
                             flow_name = name.replace('_workflow', '') if name.endswith('_workflow') else name
                             temp_flows[flow_name] = obj

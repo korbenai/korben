@@ -3,7 +3,6 @@
 import os
 import json
 import logging
-import controlflow as cf
 from src.plugins.movies import tasks as movie_tasks
 from src.plugins.email import tasks as email_tasks
 from src.plugins.movies.lib import TMDBService
@@ -101,7 +100,6 @@ def _format_movie_email(movies: list, genre_names: list) -> str:
     return html
 
 
-@cf.flow
 def trending_movies_workflow(
     genres: str | None = None,
     min_rating: float | None = None,

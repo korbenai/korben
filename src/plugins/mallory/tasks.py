@@ -3,13 +3,23 @@
 import os
 import logging
 import requests
-import controlflow as cf
 from src.lib.core_utils import get_agent_name, get_plugin_config, merge_config_with_kwargs
 
 # Plugin dependencies - required for this plugin to work
 __dependencies__ = ['email', 'slack']
 
 logger = logging.getLogger(__name__)
+
+# System prompt for story summarization
+SUMMARIZER_SYSTEM_PROMPT = """You are a cybersecurity news analyst. Summarize security stories concisely.
+Focus on:
+- What happened
+- Why it matters
+- Key technical details
+- Impact on security community
+
+Keep summaries under 100 words each.
+Use clear, technical language."""
 
 
 def fetch_mallory_stories(**kwargs):
@@ -24,6 +34,9 @@ def fetch_mallory_stories(**kwargs):
     Returns:
         str: Formatted markdown with story summaries
     """
+    from src.agents.base import get_llm
+    from langchain_core.messages import HumanMessage, SystemMessage
+    
     # Load plugin config and merge with kwargs
     config = get_plugin_config('mallory')
     params = merge_config_with_kwargs(config, kwargs)
@@ -104,22 +117,8 @@ def fetch_mallory_stories(**kwargs):
         reverse=True
     )
     
-    # Create summarization agent
-    agent_name = get_agent_name()
-    summarizer = cf.Agent(
-        name=agent_name,
-        instructions="""
-        You are a cybersecurity news analyst. Summarize security stories concisely.
-        Focus on:
-        - What happened
-        - Why it matters
-        - Key technical details
-        - Impact on security community
-        
-        Keep summaries under 100 words each.
-        Use clear, technical language.
-        """
-    )
+    # Get LLM for summarization
+    llm = get_llm(temperature=0.3)
     
     # Format stories with AI summaries
     formatted_stories = []
@@ -131,20 +130,26 @@ def fetch_mallory_stories(**kwargs):
         references = story.get('references', []) or []
         url = story.get('url') or (references[0].get('url') if references and isinstance(references[0], dict) else '#')
         
-        # Generate AI summary
+        # Generate AI summary using LangChain
         summary_prompt = f"Summarize this security story:\n\nTitle: {title}\n\nDescription: {description}"
         
-        summary = cf.run(
-            summary_prompt,
-            agents=[summarizer],
-            result_type=str
-        )
+        try:
+            messages = [
+                SystemMessage(content=SUMMARIZER_SYSTEM_PROMPT),
+                HumanMessage(content=summary_prompt),
+            ]
+            response = llm.invoke(messages)
+            summary = response.content
+        except Exception as e:
+            logger.error(f"Failed to summarize story '{title}': {e}")
+            summary = description[:200] + "..." if len(description) > 200 else description
         
         formatted_stories.append(
             f"## {title}\n\n"
             f"{summary}\n\n"
             f"**References:** {ref_count} | [Read more on Mallory]({url})\n"
         )
+    
     # If no stories, return a helpful message
     if not formatted_stories:
         return "No stories found in the last 24 hours."
